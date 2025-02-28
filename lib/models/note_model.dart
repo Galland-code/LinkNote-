@@ -35,7 +35,7 @@ final List<NoteCategory> sampleNoteCategories = [
   NoteCategory(
     id: '1',
     name: '计组',
-    icon: 'assets/icons/notebook.png',
+    icon: 'assets/icons/notebook.svg',
     notes: [
       Note(
         id: '1',

@@ -26,28 +26,28 @@ class PixelNavbar extends StatelessWidget {
         children: [
           _buildNavItem(
               context,
-              'assets/icons/notebook.png',
+              'assets/icons/notebooks.svg',
               '笔记库',
               0,
                   () => Navigator.pushReplacementNamed(context, AppRoutes.notes)
           ),
           _buildNavItem(
               context,
-              'assets/icons/sword.png',
+              'assets/icons/sword.svg',
               '问关',
               1,
                   () => Navigator.pushReplacementNamed(context, AppRoutes.quiz)
           ),
           _buildNavItem(
               context,
-              'assets/icons/note.png',
+              'assets/icons/note.svg',
               '错题集',
               2,
                   () => Navigator.pushReplacementNamed(context, AppRoutes.quizCollection)
           ),
           _buildNavItem(
               context,
-              'assets/icons/trophy.png',
+              'assets/icons/trophy.svg',
               '成就',
               3,
                   () => Navigator.pushReplacementNamed(context, AppRoutes.achievements)
