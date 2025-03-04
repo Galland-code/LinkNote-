@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../routes.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../themes/colors.dart';
 
 class PixelNavbar extends StatelessWidget {
@@ -77,12 +78,15 @@ class PixelNavbar extends StatelessWidget {
         )
             : null,
         child: Row(
-          children: [
-            Image.asset(
-              iconPath,
-              width: 24,
-              height: 24,
-              color: isSelected ? Colors.black : Colors.grey,
+            children: [
+            SvgPicture.asset(  // 替换 Image.asset
+            iconPath,
+            width: 24,
+            height: 24,
+            colorFilter: ColorFilter.mode(  // 颜色设置方式不同
+            isSelected ? Colors.black : Colors.grey,
+            BlendMode.srcIn,
+            ),
             ),
             if (isSelected)
               Padding(
