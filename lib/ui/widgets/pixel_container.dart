@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
 
+/// A container with pixel art style borders
 class PixelContainer extends StatelessWidget {
   final Widget child;
-  final Color backgroundColor;
-  final EdgeInsetsGeometry padding;
-  final EdgeInsetsGeometry margin;
-  final double borderRadius;
-  final BorderSide? borderSide;
+  final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
+  final Color? backgroundColor;
   final double? width;
   final double? height;
+  final BorderRadius? borderRadius;
 
   const PixelContainer({
     Key? key,
     required this.child,
-    this.backgroundColor = Colors.transparent,
-    this.padding = const EdgeInsets.all(0),
-    this.margin = const EdgeInsets.all(0),
-    this.borderRadius = 0,
-    this.borderSide,
+    this.padding,
+    this.margin,
+    this.backgroundColor,
     this.width,
     this.height,
+    this.borderRadius,
   }) : super(key: key);
 
   @override
@@ -28,14 +27,12 @@ class PixelContainer extends StatelessWidget {
       width: width,
       height: height,
       margin: margin,
-      padding: padding,
       decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(borderRadius),
-        border: borderSide != null
-            ? Border.fromBorderSide(borderSide!)
-            : null,
+        color: backgroundColor ?? Colors.white,
+        border: Border.all(color: Colors.black, width: 2),
+        borderRadius: borderRadius ?? BorderRadius.circular(20),
       ),
+      padding: padding,
       child: child,
     );
   }

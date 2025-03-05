@@ -1,69 +1,61 @@
-class Note {
-  final String id;
-  final String title;
-  final String content;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final String category;
+import 'package:hive/hive.dart';
 
-  const Note({
+part 'note_model.g.dart'; // 这个文件将由 build_runner 自动生成
+
+@HiveType(typeId: 2)
+class Note {
+  @HiveField(0)
+  String id;
+
+  @HiveField(1)
+  String title;
+
+  @HiveField(2)
+  String content;
+
+  @HiveField(3)
+  String date;
+
+  @HiveField(4)
+  String? icon;
+
+  @HiveField(5)
+  String? category;
+
+  @HiveField(6)
+  String userId;
+
+  Note({
     required this.id,
     required this.title,
     required this.content,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.category,
+    required this.date,
+    this.icon,
+    this.category,
+    required this.userId,
   });
+
+  factory Note.fromJson(Map<String, dynamic> json) {
+    return Note(
+      id: json['id'].toString(),
+      title: json['title'],
+      content: json['content'],
+      date: json['date'],
+      icon: json['icon'],
+      category: json['category'],
+      userId: json['userId'].toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'content': content,
+      'date': date,
+      'icon': icon,
+      'category': category,
+      'userId': userId,
+    };
+  }
 }
-
-class NoteCategory {
-  final String id;
-  final String name;
-  final String icon;
-  final List<Note> notes;
-
-  const NoteCategory({
-    required this.id,
-    required this.name,
-    required this.icon,
-    required this.notes,
-  });
-}
-
-// Sample data
-final List<NoteCategory> sampleNoteCategories = [
-  NoteCategory(
-    id: '1',
-    name: '计组',
-    icon: 'assets/icons/notebook.svg',
-    notes: [
-      Note(
-        id: '1',
-        title: '计组复习笔记',
-        content: '计算机组成原理复习笔记内容...',
-        createdAt: DateTime(2024, 12, 5, 12, 16),
-        updatedAt: DateTime(2024, 12, 5, 12, 16),
-        category: '计组',
-      ),
-    ],
-  ),
-];
-
-final List<Note> todoList = [
-  Note(
-    id: '1',
-    title: '完成每日挑战',
-    content: '',
-    createdAt: DateTime(2024, 12, 5, 12, 16),
-    updatedAt: DateTime(2024, 12, 5, 12, 16),
-    category: 'Todo',
-  ),
-  Note(
-    id: '2',
-    title: '整理RAG技术笔记',
-    content: '',
-    createdAt: DateTime(2024, 12, 5, 12, 16),
-    updatedAt: DateTime(2024, 12, 5, 12, 16),
-    category: 'Todo',
-  ),
-];

@@ -1,43 +1,41 @@
 import 'package:flutter/material.dart';
-import '../themes/colors.dart';
 
+/// A card with pixel art style
 class PixelCard extends StatelessWidget {
   final Widget child;
+  final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
   final Color backgroundColor;
-  final Color borderColor;
-  final double borderWidth;
-  final EdgeInsetsGeometry padding;
-  final double borderRadius;
+  final VoidCallback? onTap;
   final double? width;
-  final double? height;
+  final BorderRadius? borderRadius;
 
   const PixelCard({
     Key? key,
     required this.child,
-    this.backgroundColor = AppColors.cardBackground,
-    this.borderColor = AppColors.cardBorder,
-    this.borderWidth = 2,
-    this.padding = const EdgeInsets.all(16),
-    this.borderRadius = 8,
+    this.padding,
+    this.margin,
+    this.backgroundColor = Colors.white,
+    this.onTap,
     this.width,
-    this.height,
+    this.borderRadius,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        border: Border.all(
-          color: borderColor,
-          width: borderWidth,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: width,
+        margin: margin ?? const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          border: Border.all(color: Colors.black, width: 2),
+          borderRadius: borderRadius ?? BorderRadius.circular(10),
         ),
-        borderRadius: BorderRadius.circular(borderRadius),
+        padding: padding ?? const EdgeInsets.all(16),
+        child: child,
       ),
-      padding: padding,
-      child: child,
     );
   }
 }

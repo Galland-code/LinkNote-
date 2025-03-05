@@ -1,53 +1,61 @@
-class Achievement {
-  final String id;
-  final String title;
-  final String description;
-  final String iconPath;
-  final DateTime? unlockedAt;
-  final bool isUnlocked;
+import 'package:hive/hive.dart';
 
-  const Achievement({
+part 'achievement_model.g.dart'; // 这个文件将由 build_runner 自动生成
+
+@HiveType(typeId: 1)
+class Achievement {
+  @HiveField(0)
+  String id;
+
+  @HiveField(1)
+  String title;
+
+  @HiveField(2)
+  String icon;
+
+  @HiveField(3)
+  String description;
+
+  @HiveField(4)
+  String date;
+
+  @HiveField(5)
+  int value;
+
+  @HiveField(6)
+  String? criteria;
+
+  Achievement({
     required this.id,
     required this.title,
+    required this.icon,
     required this.description,
-    required this.iconPath,
-    this.unlockedAt,
-    this.isUnlocked = false,
+    required this.date,
+    required this.value,
+    this.criteria,
   });
-}
 
-// Sample data
-final List<Achievement> sampleAchievements = [
-  Achievement(
-    id: '1',
-    title: '连续完美无错',
-    description: '连续完成3组挑战而不犯错',
-    iconPath: 'assets/icons/trophy.png',
-    unlockedAt: DateTime(2024, 12, 10),
-    isUnlocked: true,
-  ),
-  Achievement(
-    id: '2',
-    title: '连续登录',
-    description: '连续3天登录应用',
-    iconPath: 'assets/icons/cup.png',
-    unlockedAt: DateTime(2024, 12, 1),
-    isUnlocked: true,
-  ),
-  Achievement(
-    id: '3',
-    title: '关卡错误率',
-    description: '错误率低于10%',
-    iconPath: 'assets/icons/smile.png',
-    unlockedAt: null,
-    isUnlocked: true,
-  ),
-  Achievement(
-    id: '4',
-    title: 'NoGameNo Notebook',
-    description: '完成所有挑战',
-    iconPath: 'assets/icons/gameboy.png',
-    unlockedAt: null,
-    isUnlocked: true,
-  ),
-];
+  factory Achievement.fromJson(Map<String, dynamic> json) {
+    return Achievement(
+      id: json['id'].toString(),
+      title: json['title'],
+      icon: json['icon'],
+      description: json['description'],
+      date: json['date'],
+      value: json['value'],
+      criteria: json['criteria'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'icon': icon,
+      'description': description,
+      'date': date,
+      'value': value,
+      'criteria': criteria,
+    };
+  }
+}
