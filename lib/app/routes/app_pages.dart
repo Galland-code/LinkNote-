@@ -56,6 +56,7 @@ class AppPages {
         GetPage(
           name: '/register',
           page: () => RegisterView(),
+          binding: AuthBinding(),
         ),
       ],
     ),
@@ -134,7 +135,7 @@ class AppPages {
           page: () => AchievementsView(),
         ),
         GetPage(
-          name: '/achievement/detail',
+          name: '/achievements/detail',
           page: () => AchievementDetailView(),
         ),
         GetPage(

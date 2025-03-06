@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
-import '../../../../ui/widgets/pixel_button.dart';
-import '../../../../ui/widgets/pixel_card.dart';
 import '../controllers/quiz_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../widgets/pixel_card.dart';
 import '../../../widgets/pixel_button.dart';
 
-class QuizHistoryView extends GetView<QuizController> {
+class QuizQuestionView extends GetView<QuizController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,15 +18,24 @@ class QuizHistoryView extends GetView<QuizController> {
               repeat: ImageRepeat.repeat,
             ),
           ),
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: _buildHistoryList(),
-              ),
-              _buildBackButton(),
-            ],
-          ),
+          child: Obx(() {
+            if (controller.questions.isEmpty) {
+              return Center(child: CircularProgressIndicator());
+            }
+
+            final currentQuestion = controller.questions[controller.currentQuestionIndex.value];
+
+            return Column(
+              children: [
+                _buildHeader(),
+                _buildProgressBar(),
+                _buildQuestionCard(currentQuestion),
+                _buildOptions(currentQuestion),
+                Spacer(),
+                _buildNavigationButtons(),
+              ],
+            );
+          }),
         ),
       ),
     );
@@ -47,7 +53,7 @@ class QuizHistoryView extends GetView<QuizController> {
             border: Border.all(color: Colors.black, width: 2),
           ),
           child: Text(
-            '历史记录',
+            '答题中...',
             style: AppTheme.titleStyle,
           ),
         ),
@@ -55,106 +61,72 @@ class QuizHistoryView extends GetView<QuizController> {
     );
   }
 
-  Widget _buildHistoryList() {
-    // 这里应该从数据库获取历史记录
-    // 暂时使用模拟数据
-    List<Map<String, dynamic>> historyItems = [
-      {
-        'date': DateTime.now().subtract(Duration(days: 1)),
-        'quizName': '计组复习测验',
-        'score': 85.0,
-        'questions': 20,
-        'correctAnswers': 17,
-      },
-      {
-        'date': DateTime.now().subtract(Duration(days: 3)),
-        'quizName': 'RAG技术测验',
-        'score': 90.0,
-        'questions': 10,
-        'correctAnswers': 9,
-      },
-      {
-        'date': DateTime.now().subtract(Duration(days: 5)),
-        'quizName': '测试理论测验',
-        'score': 75.0,
-        'questions': 12,
-        'correctAnswers': 9,
-      },
-    ];
+  Widget _buildProgressBar() {
+    final progress = (controller.currentQuestionIndex.value + 1) / controller.questions.length;
 
-    return ListView.builder(
-      padding: EdgeInsets.all(16),
-      itemCount: historyItems.length,
-      itemBuilder: (context, index) {
-        final item = historyItems[index];
-        return _buildHistoryItem(item);
-      },
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '问题 ${controller.currentQuestionIndex.value + 1}/${controller.questions.length}',
+            style: AppTheme.subtitleStyle,
+          ),
+          SizedBox(height: 4),
+          Container(
+            height: 10,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(color: Colors.black, width: 1),
+            ),
+            child: FractionallySizedBox(
+              widthFactor: progress,
+              alignment: Alignment.centerLeft,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildHistoryItem(Map<String, dynamic> item) {
-    final Color scoreColor = item['score'] >= 80 ? Colors.green :
-    item['score'] >= 60 ? Colors.orange :
-    Colors.red;
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: 16),
+  Widget _buildQuestionCard(question) {
+    return Container(
+      margin: EdgeInsets.all(16),
       child: PixelCard(
-        padding: EdgeInsets.all(16),
+        backgroundColor: AppTheme.blueCardColor,
+        padding: EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Image.asset('assets/images/pencil.png', width: 24, height: 24),
+                SizedBox(width: 8),
                 Text(
-                  item['quizName'],
+                  '来源: ${question.source}',
                   style: TextStyle(
-                    fontSize: 18,
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: scoreColor.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: scoreColor),
-                  ),
-                  child: Text(
-                    '${item['score']}分',
-                    style: TextStyle(
-                      color: scoreColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
               ],
             ),
-            SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${DateFormat('yyyy年MM月dd日').format(item['date'])}',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                  ),
-                ),
-                Text(
-                  '${item['correctAnswers']}/${item['questions']} 正确',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: item['correctAnswers'] / item['questions'],
-              backgroundColor: Colors.grey[300],
-              color: scoreColor,
-              minHeight: 8,
+            SizedBox(height: 16),
+            Text(
+              question.content,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
@@ -162,15 +134,109 @@ class QuizHistoryView extends GetView<QuizController> {
     );
   }
 
-  Widget _buildBackButton() {
+  Widget _buildOptions(question) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: List.generate(
+          question.options.length,
+              (index) => _buildOptionItem(index, question.options[index], question),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionItem(int index, String option, var question) {
+    final isSelected = controller.selectedAnswerIndex.value == index;
+    final isAnswered = controller.isAnswered.value;
+    final isCorrect = isAnswered && question.correctOptionIndex == index;
+    final isWrong = isAnswered && isSelected && !isCorrect;
+
+    Color backgroundColor = Colors.white;
+    if (isSelected) {
+      backgroundColor = isCorrect ? Colors.green.shade200 :
+      isWrong ? Colors.red.shade200 :
+      Colors.blue.shade200;
+    }
+
+    return GestureDetector(
+      onTap: () {
+        if (!controller.isAnswered.value) {
+          controller.answerQuestion(index);
+        }
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12),
+        child: PixelCard(
+          backgroundColor: backgroundColor,
+          padding: EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.blue : Colors.grey[200],
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.black, width: 1),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '${String.fromCharCode(65 + index)}',
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  option,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ),
+              if (isAnswered) Icon(
+                isCorrect ? Icons.check_circle :
+                isWrong ? Icons.cancel :
+                Icons.circle_outlined,
+                color: isCorrect ? Colors.green :
+                isWrong ? Colors.red :
+                Colors.grey,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavigationButtons() {
     return Padding(
       padding: EdgeInsets.all(16),
-      child: PixelButton(
-        text: '返回',
-        onPressed: () {
-          Get.back();
-        },
-        backgroundColor: Colors.grey,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          PixelButton(
+            text: '退出',
+            onPressed: () {
+              Get.back();
+            },
+            backgroundColor: Colors.grey,
+            width: 100,
+          ),
+          if (controller.isAnswered.value)
+            PixelButton(
+              text: '下一题',
+              onPressed: () {
+                controller.nextQuestion();
+              },
+              width: 100,
+            ),
+        ],
       ),
     );
   }

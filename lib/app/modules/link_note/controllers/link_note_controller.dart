@@ -22,6 +22,8 @@ class LinkNoteController extends GetxController {
   final RxString noteContent = ''.obs;
   final RxString noteCategory = ''.obs;
 
+  final String currentUserId = ''; // 添加 currentUserId 变量，确保它被正确赋值
+
   @override
   void onInit() {
     super.onInit();
@@ -56,10 +58,7 @@ class LinkNoteController extends GetxController {
   // 加载待办事项
   void loadTodoItems() {
     // 实际项目中应该从数据库加载
-    todoItems.value = [
-      '完成每日挑战',
-      '整理RAG技术笔记',
-    ];
+    todoItems.value = ['完成每日挑战', '整理RAG技术笔记'];
   }
 
   // 添加待办事项
@@ -114,6 +113,7 @@ class LinkNoteController extends GetxController {
       final note = Note(
         id: id,
         title: noteTitle.value,
+        userId: currentUserId,
         content: noteContent.value,
         createdAt: DateTime.now(),
         category: noteCategory.value,

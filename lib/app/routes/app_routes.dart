@@ -27,7 +27,9 @@ abstract class Routes {
   // Profile 子路由
   static const PROFILE_EDIT = '/profile/edit';
   static const PROFILE_ACHIEVEMENTS = '/profile/achievements';
-  static const PROFILE_ACHIEVEMENT_DETAIL = '/profile/achievement/detail';
+  static const PROFILE_ACHIEVEMENT_DETAIL = '/profile/achievements/detail';
   static const PROFILE_AVATAR_SELECTION = '/profile/avatar-selection';
   static const PROFILE_DAILY_TASKS = '/profile/daily-tasks';
+
+  static const String ACHIEVEMENTS = '/achievements';
 }

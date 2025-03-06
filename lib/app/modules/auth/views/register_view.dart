@@ -248,7 +248,7 @@ class RegisterView extends GetView<AuthController> {
           Obx(() => PixelButton(
             text: controller.isLoading.value ? '注册中...' : '注册',
             onPressed: controller.isLoading.value
-                ? null
+                ? () {}
                 : controller.register,
             width: double.infinity,
           )),

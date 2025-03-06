@@ -22,7 +22,7 @@ class AnalyticsService extends GetxService {
 
   // 记录自定义事件
   Future<void> logEvent(String name, Map<String, dynamic> parameters) async {
-    await _analytics.logEvent(name: name, parameters: parameters);
+    await _analytics.logEvent(name: name, parameters: parameters.cast<String, Object>());
   }
 
   // 记录搜索事件
@@ -36,8 +36,12 @@ class AnalyticsService extends GetxService {
     required String itemId,
   }) async {
     await _analytics.logViewItem(
-      items: [AnalyticsEventItem(itemId: itemId)],
-      itemListId: contentType,
+      items: [
+        AnalyticsEventItem(
+          itemId: itemId,
+          itemListId: contentType,
+        ),
+      ],
     );
   }
 
@@ -45,9 +49,7 @@ class AnalyticsService extends GetxService {
   Future<void> logAchievementUnlocked(String achievementId) async {
     await _analytics.logEvent(
       name: 'achievement_unlocked',
-      parameters: {
-        'achievement_id': achievementId,
-      },
+      parameters: {'achievement_id': achievementId},
     );
   }
 

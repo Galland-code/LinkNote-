@@ -28,11 +28,11 @@ class UserRepository {
 
   // 注册新用户
   Future<UserModel> registerUser(
-      String username,
-      String email,
-      String password,
-      int avatarIndex,
-      ) async {
+    String username,
+    String email,
+    String password,
+    int avatarIndex,
+  ) async {
     // 实际应用中，这里应该调用API注册用户
     await Future.delayed(Duration(seconds: 1)); // 模拟网络延迟
 
@@ -46,5 +46,13 @@ class UserRepository {
       level: 1,
       experiencePoints: 0,
     );
+  }
+
+  Future<UserModel?> getUserById(String userId) async {
+    // TODO: 实现获取用户的逻辑
+  }
+
+  Future<void> createUser(UserModel user) async {
+    // 实现保存用户到数据库的逻辑
   }
 }

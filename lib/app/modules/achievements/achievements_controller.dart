@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
-import '../../../../core/models/achievement_model.dart';
-import '../../../data/models/achievement.dart';
-import '../../../data/repositories/achievement_repository.dart';
+import '../../data/models/achievement.dart';
+import '../../data/repositories/achievement_repository.dart';
 
 class AchievementsController extends GetxController {
   // 依赖注入

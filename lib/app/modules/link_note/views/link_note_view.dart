@@ -1,18 +1,20 @@
+// lib/app/modules/link_note/views/link_note_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../ui/widgets/pixel_button.dart';
-import '../../../../ui/widgets/pixel_card.dart';
+import 'package:intl/intl.dart';
 import '../controllers/link_note_controller.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../routes/app_routes.dart';
+import '../../../widgets/bottom_nav_bar.dart';
 import '../../../widgets/pixel_card.dart';
-import '../../../widgets/pixel_button.dart';
 
-class LinkNoteEditView extends GetView<LinkNoteController> {
+class LinkNoteView extends GetView<LinkNoteController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Container(
+          // 网格纸背景图案
           decoration: BoxDecoration(
             color: AppTheme.backgroundColor,
             image: DecorationImage(
@@ -24,11 +26,29 @@ class LinkNoteEditView extends GetView<LinkNoteController> {
             children: [
               _buildHeader(),
               Expanded(
-                child: _buildEditForm(),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildNoteBooksSection(),
+                      _buildTodoSection(),
+                      _buildRecentNotesSection(),
+                    ],
+                  ),
+                ),
               ),
-              _buildButtons(),
+              _buildBottomNavBar(),
             ],
           ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Get.toNamed(Routes.LINK_NOTE_EDIT),
+        backgroundColor: AppTheme.primaryColor,
+        child: Icon(Icons.add, color: Colors.white),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.black, width: 2),
         ),
       ),
     );
@@ -45,103 +65,64 @@ class LinkNoteEditView extends GetView<LinkNoteController> {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.black, width: 2),
           ),
-          child: Text(
-            controller.editingNoteId.value.isEmpty ? '新建笔记' : '编辑笔记',
-            style: AppTheme.titleStyle,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.arrow_downward, size: 20),
+              SizedBox(width: 8),
+              Text(
+                'LinkNote',
+                style: AppTheme.titleStyle,
+              ),
+              SizedBox(width: 8),
+              Icon(Icons.add, size: 20),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildEditForm() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildNoteBooksSection() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
         children: [
-          // 标题输入
-          Text(
-            '标题',
-            style: AppTheme.subtitleStyle,
-          ),
-          SizedBox(height: 8),
-          PixelCard(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: TextFormField(
-              initialValue: controller.noteTitle.value,
-              onChanged: (value) => controller.noteTitle.value = value,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                hintText: '输入笔记标题',
-              ),
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          SizedBox(height: 16),
-
-          // 分类选择
-          Text(
-            '分类',
-            style: AppTheme.subtitleStyle,
-          ),
-          SizedBox(height: 8),
-          Obx(() => PixelCard(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: controller.noteCategory.value.isEmpty
-                    ? (controller.categories.isNotEmpty ? controller.categories[0] : null)
-                    : controller.noteCategory.value,
-                onChanged: (value) {
-                  if (value != null) {
-                    controller.noteCategory.value = value;
-                  }
-                },
-                isExpanded: true,
-                items: [
-                  ...controller.categories.map((category) => DropdownMenuItem<String>(
-                    value: category,
-                    child: Text(category),
-                  )).toList(),
-                  // 添加一个新建分类选项
-                  DropdownMenuItem<String>(
-                    value: '新建分类',
-                    child: Row(
-                      children: [
-                        Icon(Icons.add, size: 16),
-                        SizedBox(width: 8),
-                        Text('新建分类'),
-                      ],
-                    ),
-                  ),
+          Expanded(
+            child: PixelCard(
+              padding: EdgeInsets.all(12),
+              child: Column(
+                children: [
+                  Image.asset('assets/images/notebook.png', height: 40),
+                  SizedBox(height: 8),
+                  Text('计组', style: AppTheme.subtitleStyle),
                 ],
               ),
             ),
-          )),
-          SizedBox(height: 16),
-
-          // 内容输入
-          Text(
-            '内容',
-            style: AppTheme.subtitleStyle,
           ),
-          SizedBox(height: 8),
-          PixelCard(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: TextFormField(
-              initialValue: controller.noteContent.value,
-              onChanged: (value) => controller.noteContent.value = value,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                hintText: '输入笔记内容',
+          SizedBox(width: 12),
+          Expanded(
+            child: PixelCard(
+              padding: EdgeInsets.all(12),
+              child: Column(
+                children: [
+                  Image.asset('assets/images/notebook.png', height: 40),
+                  SizedBox(height: 8),
+                  Text('RAG技术', style: AppTheme.subtitleStyle),
+                ],
               ),
-              maxLines: 10,
-              style: TextStyle(
-                fontSize: 16,
+            ),
+          ),
+          SizedBox(width: 12),
+          Expanded(
+            child: PixelCard(
+              padding: EdgeInsets.all(12),
+              child: Column(
+                children: [
+                  Icon(Icons.add_circle_outline, size: 40, color: AppTheme.primaryColor),
+                  SizedBox(height: 8),
+                  Text('新建', style: AppTheme.subtitleStyle),
+                ],
               ),
             ),
           ),
@@ -150,31 +131,203 @@ class LinkNoteEditView extends GetView<LinkNoteController> {
     );
   }
 
-  Widget _buildButtons() {
-    return Padding(
-      padding: EdgeInsets.all(16),
-      child: Row(
+  Widget _buildTodoSection() {
+    return Obx(() => Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: PixelCard(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Image.asset('assets/images/bell.png', width: 24, height: 24),
+                SizedBox(width: 8),
+                Text('ToDo List:', style: AppTheme.subtitleStyle),
+                Spacer(),
+                IconButton(
+                  icon: Icon(Icons.add, color: AppTheme.primaryColor),
+                  onPressed: () {
+                    // 显示添加待办项的对话框
+                    Get.dialog(
+                      AlertDialog(
+                        title: Text('添加待办项'),
+                        content: TextField(
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            hintText: '输入待办事项',
+                            border: OutlineInputBorder(),
+                          ),
+                          onSubmitted: (value) {
+                            if (value.isNotEmpty) {
+                              controller.addTodoItem(value);
+                              Get.back();
+                            }
+                          },
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Get.back(),
+                            child: Text('取消'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              // 获取文本字段的值并添加
+                              final textField = Get.find<TextField>();
+                              if (textField.controller?.text.isNotEmpty ?? false) {
+                                controller.addTodoItem(textField.controller!.text);
+                                Get.back();
+                              }
+                            },
+                            child: Text('添加'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            Divider(color: Colors.black26),
+            ...controller.todoItems.asMap().entries.map((entry) {
+              int idx = entry.key;
+              String item = entry.value;
+              return Padding(
+                padding: EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Text('${idx + 1}. ', style: AppTheme.bodyStyle),
+                    Expanded(
+                      child: Text(item, style: AppTheme.bodyStyle),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.check_circle_outline, color: Colors.green),
+                      onPressed: () => controller.removeTodoItem(idx),
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(),
+                      iconSize: 20,
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ],
+        ),
+      ),
+    ));
+  }
+
+  Widget _buildRecentNotesSection() {
+    return Obx(() => Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: PixelButton(
-              text: '取消',
-              onPressed: () {
-                Get.back();
-              },
-              backgroundColor: Colors.grey,
-            ),
+          Padding(
+            padding: EdgeInsets.only(left: 8, bottom: 8),
+            child: Text('最近笔记', style: AppTheme.subtitleStyle),
           ),
-          SizedBox(width: 16),
-          Expanded(
-            child: PixelButton(
-              text: '保存',
-              onPressed: () {
-                controller.saveNote();
-              },
+          ...controller.notes.map((note) => GestureDetector(
+            onTap: () => Get.toNamed(
+              Routes.LINK_NOTE_DETAIL,
+              arguments: {'note': note},
             ),
-          ),
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 12),
+              child: PixelCard(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            note.title,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Text(
+                          DateFormat('MM月dd日').format(note.createdAt),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppTheme.secondaryColor.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppTheme.secondaryColor),
+                          ),
+                          child: Text(
+                            note.category,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.secondaryColor,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 8),
+                            child: Text(
+                              note.content,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[700],
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )).toList(),
         ],
       ),
-    );
+    ));
+  }
+
+  Widget _buildBottomNavBar() {
+    return Obx(() => BottomNavBar(
+      currentIndex: controller.currentNavIndex.value,
+      onTap: (index) {
+        controller.currentNavIndex.value = index;
+        
+        // 导航
+        switch (index) {
+          case 0:
+            // 已经在笔记页面
+            break;
+          case 1:
+            Get.offAllNamed(Routes.QUIZ);
+            break;
+          case 2:
+            Get.offAllNamed(Routes.QUESTION_BANK);
+            break;
+          case 3:
+            Get.offAllNamed(Routes.PROFILE);
+            break;
+        }
+      },
+    ));
   }
 }

@@ -15,6 +15,7 @@ import 'app/data/repositories/achievement_repository.dart';
 import 'app/data/repositories/user_repository.dart';
 import 'app/data/repositories/task_repository.dart';
 import 'app/data/services/quiz_service.dart';
+import 'core/utils/mock_data.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

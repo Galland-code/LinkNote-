@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../providers/api_provider.dart';
@@ -20,9 +22,9 @@ class SyncService extends GetxService {
   void onInit() {
     super.onInit();
     // 监听网络连接变化
-    _connectivitySubscription = Connectivity()
-        .onConnectivityChanged
-        .listen(_handleConnectivityChange);
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen(
+      _handleConnectivityChange,
+    );
   }
 
   @override
@@ -67,7 +69,7 @@ class SyncService extends GetxService {
   // 同步笔记
   Future<void> _syncNotes() async {
     // 获取本地修改的笔记
-    final localNotes = _databaseService.getModifiedNotes();
+    final localNotes = await _databaseService.getModifiedNotes();
 
     for (var note in localNotes) {
       try {
@@ -94,5 +96,14 @@ class SyncService extends GetxService {
     await _noteRepository.getNotesFromApi();
   }
 
-// 其他同步方法...
+  // 同步问题答题记录
+  Future<void> _syncQuizAttempts() async {
+    // 实现同步问题答题记录的逻辑
+  }
+
+  // 同步成就
+  Future<void> _syncAchievements() async {
+    // 实现同步成就的逻辑
+    // 例如，从数据库获取成就并上传到服务器
+  }
 }

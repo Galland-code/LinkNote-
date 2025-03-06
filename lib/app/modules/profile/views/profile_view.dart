@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
+import '../../../data/models/achievement.dart';
 import '../controllers/profile_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../routes/app_routes.dart';

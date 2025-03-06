@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import '../controllers/achievements_controller.dart';
+import '../../achievements/achievements_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../widgets/pixel_card.dart';
 import '../../../widgets/pixel_button.dart';
@@ -11,7 +11,7 @@ import '../../../data/models/achievement.dart';
 class AchievementDetailView extends GetView<AchievementsController> {
   @override
   Widget build(BuildContext context) {
-    final Achievement achievement = Get.arguments['achievement'];
+    final Achievement achievement = Get.arguments['achievements'];
 
     return Scaffold(
       body: SafeArea(

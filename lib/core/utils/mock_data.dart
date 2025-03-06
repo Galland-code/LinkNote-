@@ -17,22 +17,34 @@ class MockData {
       Question(
         id: '2',
         source: '计组复习笔记',
-        content: 'Which of the following language executes the fastest on a computer?',
+        content:
+            'Which of the following language executes the fastest on a computer?',
         options: ['Java', 'Python', 'C', 'Assembly'],
         correctOptionIndex: 3,
       ),
       Question(
         id: '3',
         source: '测试总复习PPT',
-        content: 'Which testing technique involves testing individual components in isolation?',
-        options: ['Integration Testing', 'System Testing', 'Unit Testing', 'Acceptance Testing'],
+        content:
+            'Which testing technique involves testing individual components in isolation?',
+        options: [
+          'Integration Testing',
+          'System Testing',
+          'Unit Testing',
+          'Acceptance Testing',
+        ],
         correctOptionIndex: 2,
       ),
       Question(
         id: '4',
         source: '计组复习笔记',
         content: 'What does CPU stand for?',
-        options: ['Central Processing Unit', 'Computer Processing Unit', 'Central Processor Unit', 'Control Processing Unit'],
+        options: [
+          'Central Processing Unit',
+          'Computer Processing Unit',
+          'Central Processor Unit',
+          'Control Processing Unit',
+        ],
         correctOptionIndex: 0,
       ),
       Question(
@@ -51,13 +63,16 @@ class MockData {
       Note(
         id: '1',
         title: '第十七届全国大学生软件创新大赛',
-        content: 'Key points about the competition and participation requirements...',
+        userId: 'user123',
+        content:
+            'Key points about the competition and participation requirements...',
         createdAt: DateTime(2024, 12, 5),
         category: '竞赛笔记',
       ),
       Note(
         id: '2',
         title: '计组复习笔记',
+        userId: 'user123',
         content: 'Computer organization and architecture review notes...',
         createdAt: DateTime(2024, 12, 1),
         category: '学习笔记',
@@ -65,6 +80,7 @@ class MockData {
       Note(
         id: '3',
         title: 'RAG技术笔记',
+        userId: 'user123',
         content: 'Notes on Retrieval Augmented Generation technology...',
         createdAt: DateTime(2024, 11, 28),
         category: '技术笔记',
@@ -72,6 +88,7 @@ class MockData {
       Note(
         id: '4',
         title: '每日挑战',
+        userId: 'user123',
         content: 'Daily challenge tasks and progress...',
         createdAt: DateTime(2024, 12, 10),
         category: '挑战笔记',
@@ -131,9 +148,6 @@ class MockData {
 
   /// Get mock ToDo list items
   static List<String> getMockTodoItems() {
-    return [
-      '完成每日挑战',
-      '整理RAG技术笔记',
-    ];
+    return ['完成每日挑战', '整理RAG技术笔记'];
   }
 }

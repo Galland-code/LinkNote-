@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import '../../../../ui/widgets/pixel_button.dart';
 import '../controllers/quiz_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../widgets/pixel_card.dart';
+import '../../../widgets/pixel_button.dart';
 
 class QuizHistoryView extends GetView<QuizController> {
   @override

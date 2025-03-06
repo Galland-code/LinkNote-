@@ -11,7 +11,7 @@ class AchievementRepository {
   // 从API获取所有成就
   Future<List<Achievement>> getAchievementsFromApi() async {
     try {
-      final response = await _apiProvider.get(AppConstants.GET_ACHIEVEMENTS);
+      final response = await _apiProvider.get(AppConstants.GETIEVEMENTS_ACH);
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
         final List<Achievement> achievements = data.map((item) => Achievement(

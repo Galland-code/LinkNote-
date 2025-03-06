@@ -162,12 +162,11 @@ class ProfileController extends GetxController {
 
   // 导航到成就详情
   void navigateToAchievementDetail(Achievement achievement) {
-    Get.toNamed(Routes.PROFILE_ACHIEVEMENT_DETAIL, arguments: {'achievement': achievement});
+    Get.toNamed(Routes.PROFILE_ACHIEVEMENT_DETAIL, arguments: {'achievements': achievement});
   }
 
   // 导航到编辑资料
   void navigateToEditProfile() {
     Get.toNamed(Routes.PROFILE_EDIT);
   }
-}
 }
