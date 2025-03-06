@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../../../../core/models/achievement_model.dart';
 import '../../../data/models/achievement.dart';
 import '../../../data/repositories/achievement_repository.dart';
 

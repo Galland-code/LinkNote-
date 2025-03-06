@@ -1,4 +1,6 @@
 import 'package:get/get.dart';
+import '../../../core/models/note_model.dart';
+import '../../../core/network/api_provider.dart';
 import '../models/note.dart';
 import '../providers/api_provider.dart';
 import '../services/database_service.dart';
