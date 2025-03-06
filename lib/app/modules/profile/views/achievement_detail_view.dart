@@ -1,13 +1,14 @@
+// lib/app/modules/achievements/views/achievement_detail_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import '../controllers/profile_controller.dart';
+import '../controllers/achievements_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../widgets/pixel_card.dart';
 import '../../../widgets/pixel_button.dart';
 import '../../../data/models/achievement.dart';
 
-class AchievementDetailView extends GetView<ProfileController> {
+class AchievementDetailView extends GetView<AchievementsController> {
   @override
   Widget build(BuildContext context) {
     final Achievement achievement = Get.arguments['achievement'];
@@ -61,34 +62,29 @@ class AchievementDetailView extends GetView<ProfileController> {
       padding: EdgeInsets.all(20),
       child: Column(
         children: [
-          // 成就图标和基本信息
+          // 成就图标和状态
           PixelCard(
-            backgroundColor: achievement.isUnlocked ? AppTheme.pinkCardColor : Colors.grey[200],
+            backgroundColor: AppTheme.pinkCardColor,
             padding: EdgeInsets.all(24),
             child: Column(
               children: [
-                // 图标
                 Image.asset(
                   achievement.iconPath,
                   width: 80,
                   height: 80,
-                  color: achievement.isUnlocked ? null : Colors.grey[400],
+                  color: achievement.isUnlocked ? null : Colors.black26,
                 ),
                 SizedBox(height: 16),
-
-                // 标题
                 Text(
                   achievement.title,
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: achievement.isUnlocked ? Colors.black : Colors.grey[700],
+                    color: achievement.isUnlocked ? Colors.black : Colors.black45,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 8),
-
-                // 解锁状态
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   decoration: BoxDecoration(
@@ -106,20 +102,16 @@ class AchievementDetailView extends GetView<ProfileController> {
                     ),
                   ),
                 ),
-
-                // 解锁时间
                 if (achievement.isUnlocked && achievement.unlockedAt != null) ...[
                   SizedBox(height: 8),
                   Text(
-                    '解锁于 ${DateFormat('yyyy年MM月dd日 HH:mm').format(achievement.unlockedAt!)}',
+                    '解锁于 ${DateFormat('yyyy年MM月dd日').format(achievement.unlockedAt!)}',
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 14,
                     ),
                   ),
                 ],
-
-                // 进度值
                 if (achievement.value.isNotEmpty) ...[
                   SizedBox(height: 16),
                   Text(
@@ -152,7 +144,7 @@ class AchievementDetailView extends GetView<ProfileController> {
                 ),
                 SizedBox(height: 12),
                 Text(
-                  achievement.description ?? '暂无描述',
+                  achievement.description,
                   style: TextStyle(
                     fontSize: 16,
                     height: 1.5,
@@ -164,7 +156,7 @@ class AchievementDetailView extends GetView<ProfileController> {
 
           SizedBox(height: 24),
 
-          // 解锁条件
+          // 如何获取
           PixelCard(
             padding: EdgeInsets.all(20),
             child: Column(
@@ -182,45 +174,6 @@ class AchievementDetailView extends GetView<ProfileController> {
               ],
             ),
           ),
-
-          if (!achievement.isUnlocked) ...[
-            SizedBox(height: 24),
-
-            // 进度条
-            PixelCard(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '进度',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  LinearProgressIndicator(
-                    value: _getAchievementProgress(achievement),
-                    backgroundColor: Colors.grey[300],
-                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
-                    minHeight: 10,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      achievement.value,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -250,20 +203,47 @@ class AchievementDetailView extends GetView<ProfileController> {
         condition = '完成特定任务以解锁此成就。';
     }
 
-    return Text(
-      condition,
-      style: TextStyle(
-        fontSize: 16,
-        height: 1.5,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          condition,
+          style: TextStyle(
+            fontSize: 16,
+            height: 1.5,
+          ),
+        ),
+        SizedBox(height: 16),
+        if (!achievement.isUnlocked && achievement.title == '答题王') ...[
+          LinearProgressIndicator(
+            value: 0.45, // 模拟进度
+            backgroundColor: Colors.grey[300],
+            color: AppTheme.primaryColor,
+            minHeight: 10,
+          ),
+          SizedBox(height: 8),
+          Text(
+            '已完成: 45/100题',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ],
     );
   }
 
-  // 获取成就进度
-  double _getAchievementProgress(Achievement achievement) {
-    if (achievement.value.isEmpty) return 0.0;
-
-    try {
-      if (achievement.value.contains('/')) {
-        final parts = achievement.value.split('/');
-        final current = double.parse(parts[0
+  Widget _buildBackButton() {
+    return Padding(
+      padding: EdgeInsets.all(16),
+      child: PixelButton(
+        text: '返回',
+        onPressed: () {
+          Get.back();
+        },
+        backgroundColor: Colors.grey,
+      ),
+    );
+  }
+}

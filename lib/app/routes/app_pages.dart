@@ -2,10 +2,12 @@ import 'package:get/get.dart';
 
 // Auth Module
 import '../modules/auth/bindings/auth_binding.dart';
+import '../modules/auth/views/avatar_selection_view.dart';
 import '../modules/auth/views/login_view.dart';
 import '../modules/auth/views/register_view.dart';
 
 // Quiz Module
+import '../modules/profile/views/achievement_detail_view.dart';
 import '../modules/quiz/bindings/quiz_binding.dart';
 import '../modules/quiz/views/quiz_view.dart';
 import '../modules/quiz/views/quiz_question_view.dart';
