@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../../../data/models/achievement.dart';
@@ -90,7 +91,7 @@ class ProfileView extends GetView<ProfileController> {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(14),
-                child: Image.asset(
+                child: SvgPicture.asset(
                   AvatarData.avatars[controller.selectedAvatarIndex.value],
                   fit: BoxFit.cover,
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../routes/app_routes.dart';
@@ -91,7 +92,7 @@ class EditProfileView extends GetView<ProfileController> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(18),
-                    child: Image.asset(
+                    child: SvgPicture.asset(
                       AvatarData.avatars[controller.selectedAvatarIndex.value],
                       fit: BoxFit.cover,
                     ),

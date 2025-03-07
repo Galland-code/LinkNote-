@@ -1,6 +1,7 @@
 // lib/app/modules/auth/views/login_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:linknote/core/extensions/context_extensions.dart';
 import '../controllers/auth_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../widgets/pixel_button.dart';
@@ -18,14 +19,9 @@ class LoginView extends GetView<AuthController> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppTheme.backgroundColor,
-            image: DecorationImage(
-              image: AssetImage('assets/images/grid_background.png'),
-              repeat: ImageRepeat.repeat,
-            ),
-          ),
+        child: context.withGridBackground(
+          pixelStyle: true,
+          enhanced: true,
           child: Center(
             child: SingleChildScrollView(
               padding: EdgeInsets.all(24),
@@ -69,10 +65,7 @@ class LoginView extends GetView<AuthController> {
             ],
           ),
           padding: EdgeInsets.all(16),
-          child: Image.asset(
-            'assets/images/app_icon.png',
-            fit: BoxFit.contain,
-          ),
+          child: Image.asset('assets/images/app_icon.png', fit: BoxFit.contain),
         ),
         SizedBox(height: 16),
 
@@ -90,10 +83,7 @@ class LoginView extends GetView<AuthController> {
         // 标语
         Text(
           '学习路上的游戏化助手',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey[700],
-          ),
+          style: TextStyle(fontSize: 16, color: Colors.grey[700]),
         ),
       ],
     );
@@ -107,10 +97,7 @@ class LoginView extends GetView<AuthController> {
         children: [
           Text(
             '登录账号',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 24),
 
@@ -139,30 +126,35 @@ class LoginView extends GetView<AuthController> {
           SizedBox(height: 16),
 
           // 密码输入
-          Obx(() => TextFormField(
-            controller: passwordController,
-            decoration: InputDecoration(
-              labelText: '密码',
-              hintText: '请输入密码',
-              prefixIcon: Icon(Icons.lock),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  isPasswordVisible.value ? Icons.visibility_off : Icons.visibility,
+          Obx(
+            () => TextFormField(
+              controller: passwordController,
+              decoration: InputDecoration(
+                labelText: '密码',
+                hintText: '请输入密码',
+                prefixIcon: Icon(Icons.lock),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    isPasswordVisible.value
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                  ),
+                  onPressed:
+                      () => isPasswordVisible.value = !isPasswordVisible.value,
                 ),
-                onPressed: () => isPasswordVisible.value = !isPasswordVisible.value,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              obscureText: !isPasswordVisible.value,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return '请输入密码';
+                }
+                return null;
+              },
             ),
-            obscureText: !isPasswordVisible.value,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return '请输入密码';
-              }
-              return null;
-            },
-          )),
+          ),
           SizedBox(height: 16),
 
           // 记住我和忘记密码
@@ -170,24 +162,26 @@ class LoginView extends GetView<AuthController> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // 记住我
-              Obx(() => Row(
-                children: [
-                  SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: Checkbox(
-                      value: rememberMe.value,
-                      onChanged: (value) => rememberMe.value = value ?? false,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
+              Obx(
+                () => Row(
+                  children: [
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: Checkbox(
+                        value: rememberMe.value,
+                        onChanged: (value) => rememberMe.value = value ?? false,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        activeColor: AppTheme.primaryColor,
                       ),
-                      activeColor: AppTheme.primaryColor,
                     ),
-                  ),
-                  SizedBox(width: 8),
-                  Text('记住我'),
-                ],
-              )),
+                    SizedBox(width: 8),
+                    Text('记住我'),
+                  ],
+                ),
+              ),
 
               // 忘记密码
               TextButton(
@@ -196,9 +190,7 @@ class LoginView extends GetView<AuthController> {
                 },
                 child: Text(
                   '忘记密码?',
-                  style: TextStyle(
-                    color: AppTheme.primaryColor,
-                  ),
+                  style: TextStyle(color: AppTheme.primaryColor),
                 ),
               ),
             ],
@@ -206,11 +198,7 @@ class LoginView extends GetView<AuthController> {
           SizedBox(height: 24),
 
           // 登录按钮
-          PixelButton(
-            text: '登录',
-            onPressed: _login,
-            width: double.infinity,
-          ),
+          PixelButton(text: '登录', onPressed: _login, width: double.infinity),
         ],
       ),
     );

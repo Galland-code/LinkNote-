@@ -1,5 +1,6 @@
 // lib/app/modules/achievements/views/achievement_detail_view.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../achievements/achievements_controller.dart';
@@ -68,11 +69,13 @@ class AchievementDetailView extends GetView<AchievementsController> {
             padding: EdgeInsets.all(24),
             child: Column(
               children: [
-                Image.asset(
+                SvgPicture.asset(
                   achievement.iconPath,
                   width: 80,
                   height: 80,
-                  color: achievement.isUnlocked ? null : Colors.black26,
+                  colorFilter: achievement.isUnlocked
+                  ? null
+                  : ColorFilter.mode(Colors.grey.shade400, BlendMode.srcIn),
                 ),
                 SizedBox(height: 16),
                 Text(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/svg_helper.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -32,16 +33,16 @@ class BottomNavBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(0, 'assets/icons/notebook.png', '笔记', currentIndex == 0),
-          _buildNavItem(1, 'assets/icons/sword.png', '闯关', currentIndex == 1),
-          _buildNavItem(2, 'assets/icons/document.png', '错题', currentIndex == 2),
-          _buildNavItem(3, 'assets/icons/user.png', '我的', currentIndex == 3),
+          _buildNavItem(0, 'notebook', '笔记', currentIndex == 0),
+          _buildNavItem(1, 'sword', '闯关', currentIndex == 1),
+          _buildNavItem(2, 'document', '错题', currentIndex == 2),
+          _buildNavItem(3, 'user', '我的', currentIndex == 3),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(int index, String iconPath, String label, bool isSelected) {
+  Widget _buildNavItem(int index, String iconName, String label, bool isSelected) {
     return GestureDetector(
       onTap: () => onTap(index),
       child: Container(
@@ -52,11 +53,10 @@ class BottomNavBar extends StatelessWidget {
         ) : null,
         child: Row(
           children: [
-            Image.asset(
-              iconPath,
-              width: 24,
-              height: 24,
+            SvgHelper.getSvgIcon(
+              iconName,
               color: isSelected ? AppTheme.primaryColor : Colors.black54,
+              width: 24,
             ),
             SizedBox(width: 4),
             Text(
