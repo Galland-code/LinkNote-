@@ -7,7 +7,7 @@ class AppTheme {
   static final Color accentColor = Color(0xFF4CAF50);
   static final Color backgroundColor = Color(0xFFF5F5DC); // 米色网格背景
   static final Color cardColor = Color(0xFFF0F0E0);
-  static final Color navBarColor = Color(0xFFD0D0D0);
+  static final Color navBarColor = Color(0xFFC0C9D3);
   static final Color blueCardColor = Color(0xFF6B8CCC);
   static final Color pinkCardColor = Color(0xFFE8A0B0);
   static final Color yellowCardColor = Color(0xFFF5DEB3);

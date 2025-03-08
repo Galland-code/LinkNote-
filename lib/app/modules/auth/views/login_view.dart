@@ -9,7 +9,7 @@ import '../../../widgets/pixel_card.dart';
 import '../../../routes/app_routes.dart';
 
 class LoginView extends GetView<AuthController> {
-  final TextEditingController emailController = TextEditingController();
+  final TextEditingController accountController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final RxBool isPasswordVisible = false.obs;
   final RxBool rememberMe = false.obs;
@@ -73,7 +73,7 @@ class LoginView extends GetView<AuthController> {
         Text(
           'LinkNote',
           style: TextStyle(
-            fontSize: 32,
+            fontSize: 40,
             fontWeight: FontWeight.bold,
             color: AppTheme.primaryColor,
           ),
@@ -82,8 +82,8 @@ class LoginView extends GetView<AuthController> {
 
         // 标语
         Text(
-          '学习路上的游戏化助手',
-          style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+          '我玩游戏的时候都在学习！',
+          style: TextStyle(fontSize: 20, color: Colors.grey[700]),
         ),
       ],
     );
@@ -97,17 +97,17 @@ class LoginView extends GetView<AuthController> {
         children: [
           Text(
             '登录账号',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 24),
 
           // 邮箱输入
           TextFormField(
-            controller: emailController,
+            controller: accountController,
             decoration: InputDecoration(
-              labelText: '邮箱',
-              hintText: '请输入邮箱地址',
-              prefixIcon: Icon(Icons.email),
+              labelText: '账号',
+              hintText: '请输入账号',
+              prefixIcon: Icon(Icons.account_box),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -115,10 +115,7 @@ class LoginView extends GetView<AuthController> {
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return '请输入邮箱';
-              }
-              if (!GetUtils.isEmail(value)) {
-                return '请输入有效的邮箱地址';
+                return '请输入账号';
               }
               return null;
             },
@@ -186,7 +183,7 @@ class LoginView extends GetView<AuthController> {
               // 忘记密码
               TextButton(
                 onPressed: () {
-                  // 跳转到忘记密码页面
+                  // 跳转到忘记密码页面，没写
                 },
                 child: Text(
                   '忘记密码?',
@@ -210,7 +207,7 @@ class LoginView extends GetView<AuthController> {
       // controller.login(emailController.text, passwordController.text);
 
       // 模拟登录成功，跳转到主页
-      Get.offAllNamed(Routes.QUIZ);
+      Get.offAllNamed(Routes.LINK_NOTE);
     }
   }
 

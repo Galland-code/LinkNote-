@@ -87,25 +87,24 @@ class QuizView extends GetView<QuizController> {
         children: [
           PixelButton(
             text: '继续答题',
-            onPressed: () {
-              // Navigate to answering questions
-            },
+            onPressed: () =>
+              Get.toNamed(Routes.QUIZ_QUESTION),
+
             backgroundColor: AppTheme.primaryColor,
           ),
           SizedBox(height: 16),
           PixelButton(
             text: '新的挑战',
-            onPressed: () {
-              // Start new quiz
-            },
+            onPressed: () =>
+              Get.toNamed(Routes.QUIZ_QUESTION)
+            ,
             backgroundColor: AppTheme.primaryColor,
           ),
           SizedBox(height: 16),
           PixelButton(
             text: '历史记录',
-            onPressed: () {
-              // View history
-            },
+            onPressed: () =>
+              Get.toNamed(Routes.QUIZ_HISTORY),
             backgroundColor: AppTheme.primaryColor,
           ),
         ],
