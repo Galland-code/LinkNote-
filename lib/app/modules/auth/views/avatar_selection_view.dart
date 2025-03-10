@@ -22,9 +22,7 @@ class AvatarSelectionView extends GetView<AuthController> {
           child: Column(
             children: [
               _buildHeader(),
-              Expanded(
-                child: _buildAvatarGrid(),
-              ),
+              Expanded(child: _buildAvatarGrid()),
               _buildButtons(),
             ],
           ),
@@ -44,10 +42,7 @@ class AvatarSelectionView extends GetView<AuthController> {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.black, width: 2),
           ),
-          child: Text(
-            '选择头像',
-            style: AppTheme.titleStyle,
-          ),
+          child: Text('选择头像', style: AppTheme.titleStyle),
         ),
       ),
     );
@@ -65,27 +60,30 @@ class AvatarSelectionView extends GetView<AuthController> {
         ),
         itemCount: AvatarData.avatars.length,
         itemBuilder: (context, index) {
-          return Obx(() => GestureDetector(
-            onTap: () => controller.selectAvatar(index),
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: controller.selectedAvatarIndex.value == index
-                      ? AppTheme.primaryColor
-                      : Colors.transparent,
-                  width: 3,
+          return Obx(
+            () => GestureDetector(
+              onTap: () => controller.selectAvatar(index),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color:
+                        controller.selectedAvatarIndex.value == index
+                            ? AppTheme.primaryColor
+                            : Colors.transparent,
+                    width: 3,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(13),
-                child: Image.asset(
-                  AvatarData.avatars[index],
-                  fit: BoxFit.cover,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(13),
+                  child: Image.asset(
+                    AvatarData.avatars[index],
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
-          ));
+          );
         },
       ),
     );
@@ -107,7 +105,8 @@ class AvatarSelectionView extends GetView<AuthController> {
           Expanded(
             child: PixelButton(
               text: '确认',
-              onPressed: () => Get.back(result: controller.selectedAvatarIndex.value),
+              onPressed:
+                  () => Get.back(result: controller.selectedAvatarIndex.value),
             ),
           ),
         ],

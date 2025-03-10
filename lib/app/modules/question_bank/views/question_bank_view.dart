@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:linknote/core/extensions/context_extensions.dart';
 import '../controllers/question_bank_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../routes/app_routes.dart';
@@ -11,15 +12,9 @@ class QuestionBankView extends GetView<QuestionBankController> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Container(
+        child: context.withGridBackground(
           // Graph paper background pattern
-          decoration: BoxDecoration(
-            color: AppTheme.backgroundColor,
-            image: DecorationImage(
-              image: AssetImage('assets/images/grid_background.png'),
-              repeat: ImageRepeat.repeat,
-            ),
-          ),
+
           child: Column(
             children: [
               _buildHeader(),
@@ -45,19 +40,33 @@ class QuestionBankView extends GetView<QuestionBankController> {
   Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 20),
-      child: Center(
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black, width: 2),
+      child: Stack(
+        alignment: Alignment.centerRight, // 右对齐
+        children: [
+          Container(
+            width: double.infinity,
+            height: 80, // 根据需要调整高度
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/pixel-title.png'), // 替换为你的图片路径
+                fit: BoxFit.contain,
+              ),
+            ),
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(width: 8),
+                  Text(
+                    '错题集',
+                    style: AppTheme.titleStyle,
+                  ),
+                  SizedBox(width: 8),
+                ],
+              ),
+            ),
           ),
-          child: Text(
-            '错题集',
-            style: AppTheme.titleStyle,
-          ),
-        ),
+        ],
       ),
     );
   }

@@ -7,6 +7,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../widgets/pixel_button.dart';
 import '../../../widgets/pixel_card.dart';
 import '../../../routes/app_routes.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert'; // 用于处理 JSON
 
 class LoginView extends GetView<AuthController> {
   final TextEditingController accountController = TextEditingController();
@@ -24,7 +26,7 @@ class LoginView extends GetView<AuthController> {
           enhanced: true,
           child: Center(
             child: SingleChildScrollView(
-              padding: EdgeInsets.all(24),
+              padding: EdgeInsets.all(20),
               child: Form(
                 key: formKey,
                 child: Column(
@@ -50,21 +52,21 @@ class LoginView extends GetView<AuthController> {
       children: [
         // 应用图标
         Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.black, width: 3),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 10,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          padding: EdgeInsets.all(16),
+          width: 200,
+          height: 200,
+          // decoration: BoxDecoration(
+          //   color: Colors.white,
+          //   borderRadius: BorderRadius.circular(24),
+          //   border: Border.all(color: Colors.black, width: 3),
+          //   boxShadow: [
+          //     BoxShadow(
+          //       color: Colors.black.withOpacity(0.2),
+          //       blurRadius: 10,
+          //       offset: Offset(0, 4),
+          //     ),
+          //   ],
+          // ),
+          // padding: EdgeInsets.all(16),
           child: Image.asset('assets/images/app_icon.png', fit: BoxFit.contain),
         ),
         SizedBox(height: 16),
@@ -201,16 +203,37 @@ class LoginView extends GetView<AuthController> {
     );
   }
 
-  void _login() {
+  void _login() async {
     if (formKey.currentState?.validate() ?? false) {
-      // 在实际应用中，这里应该调用控制器的登录方法
-      // controller.login(emailController.text, passwordController.text);
+      // 获取用户输入的账号和密码
+      String account = accountController.text;
+      String password = passwordController.text;
 
-      // 模拟登录成功，跳转到主页
-      Get.offAllNamed(Routes.LINK_NOTE);
+      // 构建请求的 URL
+      const String url = 'http://82.157.18.189:8080/linknote/api/auth/login';
+
+      // 发送 POST 请求
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json', // 设置请求头
+        },
+        body: json.encode({'username': account, 'password': password}),
+      );
+
+      // 检查响应状态
+      if (response.statusCode == 200) {
+        // 登录成功，跳转到主页
+        Get.offAllNamed(Routes.LINK_NOTE);
+      } else {
+        // 处理登录失败的情况
+        // 你可以显示错误消息
+        print('登录失败: ${response.statusCode} -  ${response.body}');
+        Get.offAllNamed(Routes.LINK_NOTE);
+
+      }
     }
   }
-
   Widget _buildRegisterLink() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,

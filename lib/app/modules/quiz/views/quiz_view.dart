@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:linknote/core/extensions/context_extensions.dart';
@@ -33,20 +34,48 @@ class QuizView extends GetView<QuizController> {
   Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 20),
-      child: Center(
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black, width: 2),
-          ),
-          child: Text(
-            'Quiz',
-            style: AppTheme.titleStyle,
-          ),
-        ),
-      ),
+    child: Stack(
+    alignment: Alignment.centerRight, // 右对齐
+    children: [
+    Container(
+    width: double.infinity,
+    height: 80, // 根据需要调整高度
+    decoration: BoxDecoration(
+    image: DecorationImage(
+    image: AssetImage('assets/images/pixel-title.png'), // 替换为你的图片路径
+    fit: BoxFit.contain,
+    ),
+    ),
+    child: Center(
+    child: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+    SizedBox(width: 8),
+    Text(
+    'Quiz',
+    style: AppTheme.titleStyle,
+    ),
+    SizedBox(width: 8),
+    ],
+    ),
+    ),
+    ),
+    Positioned(
+    // 使用 Positioned 来放置 FloatingActionButton
+    right: 0, // 右侧对齐
+    child: FloatingActionButton(
+    onPressed:
+    () => Get.toNamed(Routes.LINK_NOTE_EDIT), // 点击按钮时导航到编辑页面
+    backgroundColor: AppTheme.primaryColor, // 按钮背景颜色
+    child: Icon(Icons.add, color: Colors.white), // 按钮图标
+    shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(16), // 圆角边框
+    side: BorderSide(color: Colors.black, width: 2), // 边框样式
+    ),
+    ),
+    ),
+    ],
+    ),
     );
   }
 
@@ -68,8 +97,8 @@ class QuizView extends GetView<QuizController> {
           Positioned(
             bottom: 20,
             right: 50,
-            child: Image.asset(
-              'assets/images/pencil.png',
+            child: SvgPicture.asset(
+              'assets/images/pencil.svg',
               width: 100,
               height: 100,
             ),

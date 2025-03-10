@@ -101,4 +101,6 @@ class AuthController extends GetxController {
   void goToLogin() {
     Get.toNamed(Routes.AUTH_LOGIN);
   }
+
+  void login(String text, String text2) {}
 }

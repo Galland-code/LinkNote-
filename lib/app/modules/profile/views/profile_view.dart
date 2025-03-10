@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:linknote/core/extensions/context_extensions.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../../../data/models/achievement.dart';
 import '../controllers/profile_controller.dart';
@@ -17,14 +18,7 @@ class ProfileView extends GetView<ProfileController> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppTheme.backgroundColor,
-            image: DecorationImage(
-              image: AssetImage('assets/images/grid_background.png'),
-              repeat: ImageRepeat.repeat,
-            ),
-          ),
+        child: context.withGridBackground(
           child: Obx(() {
             if (controller.isLoading.value) {
               return Center(child: PixelLoading());
@@ -52,23 +46,37 @@ class ProfileView extends GetView<ProfileController> {
       ),
     );
   }
-
+// 标题
   Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 20),
-      child: Center(
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black, width: 2),
+      child: Stack(
+        alignment: Alignment.centerRight, // 右对齐
+        children: [
+          Container(
+            width: double.infinity,
+            height: 80, // 根据需要调整高度
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/pixel-title.png'), // 替换为你的图片路径
+                fit: BoxFit.contain,
+              ),
+            ),
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(width: 8),
+                  Text(
+                    '个人中心',
+                    style: AppTheme.titleStyle,
+                  ),
+                  SizedBox(width: 8),
+                ],
+              ),
+            ),
           ),
-          child: Text(
-            '个人中心',
-            style: AppTheme.titleStyle,
-          ),
-        ),
+        ],
       ),
     );
   }
@@ -141,7 +149,7 @@ class ProfileView extends GetView<ProfileController> {
       ),
     );
   }
-
+// 每日任务
   Widget _buildDailyTasksSection() {
     return Padding(
       padding: EdgeInsets.all(16),
@@ -152,7 +160,7 @@ class ProfileView extends GetView<ProfileController> {
             padding: EdgeInsets.only(left: 8, bottom: 8),
             child: Row(
               children: [
-                Icon(Icons.calendar_today, size: 16),
+                Icon(Icons.calendar_today, size: 30),
                 SizedBox(width: 4),
                 Text(
                   '今日任务',
@@ -243,7 +251,7 @@ class ProfileView extends GetView<ProfileController> {
                 borderRadius: BorderRadius.circular(6),
               ),
               child: task.isCompleted
-                  ? Icon(Icons.check, color: Colors.white, size: 16)
+                  ? Icon(Icons.check, color: Colors.white, size: 30)
                   : null,
             ),
           ),

@@ -15,13 +15,13 @@ class AppTheme {
 
   // 文本样式
   static final TextStyle titleStyle = TextStyle(
-    fontSize: 24,
+    fontSize: 40,
     fontWeight: FontWeight.bold,
     color: Colors.black,
   );
 
   static final TextStyle subtitleStyle = TextStyle(
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: FontWeight.w600,
     color: Colors.black,
   );

@@ -1,4 +1,3 @@
-// lib/core/values/app_constants.dart
 class AppConstants {
   // 路由常量
   static const String HOME = '/home';
@@ -8,15 +7,17 @@ class AppConstants {
   static const String PROFILE = '/profile';
 
   // API端点
-  static const String BASE_URL = 'https://api.linknote.com/api'; // 修改为你的后端URL
+  static const String BASE_URL = 'http://82.157.18.189:8080/linknote/api'; // 修改为你的后端URL
 
   // 用户相关
   static const String LOGIN = '/auth/login';
   static const String REGISTER = '/auth/register';
   static const String LOGOUT = '/auth/logout';
   static const String USER_INFO = '/users/me';
+  static const String UPDATE_PROFILE = '/users/update';
 
   // 笔记相关
+  static const String UPLOAD_FILE = '/files/upload';
   static const String NOTES = '/notes';
   static const String NOTE_BY_ID = '/notes/'; // 需要附加ID
   static const String NOTES_BY_CATEGORY = '/notes/category/'; // 需要附加分类名

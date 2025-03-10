@@ -1,5 +1,6 @@
 // lib/app/modules/link_note/views/link_note_view.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:linknote/core/extensions/context_extensions.dart';
@@ -19,7 +20,7 @@ class LinkNoteView extends GetView<LinkNoteController> {
           enhanced: true,
           child: Column(
             children: [
-              _buildHeader(),
+              _buildHeader(), //标题
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
@@ -32,7 +33,7 @@ class LinkNoteView extends GetView<LinkNoteController> {
                   ),
                 ),
               ),
-              _buildBottomNavBar(),
+              _buildBottomNavBar(), //底部navbar
             ],
           ),
         ),
@@ -42,36 +43,45 @@ class LinkNoteView extends GetView<LinkNoteController> {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 20),
+      padding: EdgeInsets.symmetric(vertical: 20), // 设置上下内边距
+
       child: Stack(
-        alignment: Alignment.centerRight,
+        alignment: Alignment.centerRight, // 右对齐
         children: [
           Container(
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+            width: double.infinity,
+            height: 80, // 根据需要调整高度
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.black, width: 2),
+              image: DecorationImage(
+                image: AssetImage('assets/images/pixel-title.png'), // 替换为你的图片路径
+                fit: BoxFit.contain,
+              ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.arrow_downward, size: 20),
-                SizedBox(width: 8),
-                Text('LinkNote', style: AppTheme.titleStyle),
-                SizedBox(width: 8),
-              ],
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(width: 8),
+                  Text(
+                    'LinkNote',
+                    style: AppTheme.titleStyle,
+                  ),
+                  SizedBox(width: 8),
+                ],
+              ),
             ),
           ),
           Positioned(
-            right: 0,
+            // 使用 Positioned 来放置 FloatingActionButton
+            right: 0, // 右侧对齐
             child: FloatingActionButton(
-              onPressed: () => Get.toNamed(Routes.LINK_NOTE_EDIT),
-              backgroundColor: AppTheme.primaryColor,
-              child: Icon(Icons.add, color: Colors.white),
+              onPressed:
+                  () => Get.toNamed(Routes.LINK_NOTE_EDIT), // 点击按钮时导航到编辑页面
+              backgroundColor: AppTheme.primaryColor, // 按钮背景颜色
+              child: Icon(Icons.add, color: Colors.white), // 按钮图标
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: Colors.black, width: 2),
+                borderRadius: BorderRadius.circular(16), // 圆角边框
+                side: BorderSide(color: Colors.black, width: 2), // 边框样式
               ),
             ),
           ),
@@ -80,21 +90,19 @@ class LinkNoteView extends GetView<LinkNoteController> {
     );
   }
 
+  // TODO: 改成变量渲染
   Widget _buildNoteBooksSection() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           Expanded(
-            child: PixelCard(
-              padding: EdgeInsets.all(12),
-              child: Column(
-                children: [
-                  Image.asset('assets/images/notebook.png', height: 40),
-                  SizedBox(height: 8),
-                  Text('计组', style: AppTheme.subtitleStyle),
-                ],
-              ),
+            child: Column(
+              children: [
+                SvgPicture.asset('assets/icons/notebook.svg', height: 60),
+                SizedBox(height: 8),
+                Text('计组', style: AppTheme.subtitleStyle),
+              ],
             ),
           ),
           SizedBox(width: 12),
@@ -103,7 +111,7 @@ class LinkNoteView extends GetView<LinkNoteController> {
               padding: EdgeInsets.all(12),
               child: Column(
                 children: [
-                  Image.asset('assets/images/notebook.png', height: 40),
+                  SvgPicture.asset('assets/icons/notebook.svg', height: 40),
                   SizedBox(height: 8),
                   Text('RAG技术', style: AppTheme.subtitleStyle),
                 ],
@@ -143,7 +151,11 @@ class LinkNoteView extends GetView<LinkNoteController> {
             children: [
               Row(
                 children: [
-                  Image.asset('assets/images/bell.png', width: 24, height: 24),
+                  SvgPicture.asset(
+                    'assets/icons/bell.svg',
+                    width: 24,
+                    height: 24,
+                  ),
                   SizedBox(width: 8),
                   Text('ToDo List:', style: AppTheme.subtitleStyle),
                   Spacer(),
