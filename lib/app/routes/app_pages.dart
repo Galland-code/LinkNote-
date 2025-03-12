@@ -9,6 +9,8 @@ import '../modules/auth/views/register_view.dart';
 // Quiz Module
 import '../modules/profile/views/achievement_detail_view.dart';
 import '../modules/quiz/bindings/quiz_binding.dart';
+import '../modules/quiz/views/quiz_challenge_select_view.dart';
+import '../modules/quiz/views/quiz_levels_view.dart';
 import '../modules/quiz/views/quiz_view.dart';
 import '../modules/quiz/views/quiz_question_view.dart';
 import '../modules/quiz/views/quiz_result_view.dart';
@@ -62,6 +64,8 @@ class AppPages {
     ),
 
     // Quiz路由
+
+    // Quiz路由 (updated)
     GetPage(
       name: Routes.QUIZ,
       page: () => QuizView(),
@@ -78,6 +82,14 @@ class AppPages {
         GetPage(
           name: '/history',
           page: () => QuizHistoryView(),
+        ),
+        GetPage(
+          name: '/challenge-select',
+          page: () => QuizChallengeSelectView(),
+        ),
+        GetPage(
+          name: '/levels',
+          page: () => QuizLevelsView(),
         ),
       ],
     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:linknote/core/extensions/context_extensions.dart';
 import '../controllers/quiz_controller.dart';
@@ -70,10 +71,10 @@ class QuizResultView extends GetView<QuizController> {
         padding: EdgeInsets.all(24),
         child: Column(
           children: [
-            Image.asset(
-              accuracy >= 80 ? 'assets/images/trophy.png' :
-              accuracy >= 60 ? 'assets/images/star.png' :
-              'assets/images/thumbs_up.png',
+            SvgPicture.asset(
+              accuracy >= 80 ? 'assets/icons/trophy.svg' :
+              accuracy >= 60 ? 'assets/icons/star.svg' :
+              'assets/icons/crown.svg',
               width: 64,
               height: 64,
             ),

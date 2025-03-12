@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:linknote/core/extensions/context_extensions.dart';
 import '../controllers/question_bank_controller.dart';
@@ -72,44 +73,107 @@ class QuestionBankView extends GetView<QuestionBankController> {
   }
 
   Widget _buildQuestionsList() {
-    return Obx(() => Padding(
+    return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        children: controller.questions.map((question) => Padding(
-          padding: EdgeInsets.only(bottom: 12),
-          child: PixelCard(
-            backgroundColor: AppTheme.blueCardColor,
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Image.asset('assets/images/pencil.png', width: 24, height: 24),
-                    SizedBox(width: 8),
-                    Text(
-                      '来源: ${question.source}',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Q: ${question.content}',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
+      child: Container(
+        height: 400, // 设置固定高度以启用溢出效果
+        decoration: BoxDecoration(
+          color: Color(0xFFD4DEE3),
+          borderRadius: BorderRadius.circular(12),
+
+        ),
+        // 使用嵌套容器创建内阴影效果
+        child: Stack(
+          children: [
+        // 顶部内阴影
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 10,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.3),
+                  Colors.transparent,
+                ],
+              ),
             ),
           ),
-        )).toList(),
+        ),
+        // 左侧内阴影
+        Positioned(
+          top: 0,
+          left: 0,
+          bottom: 0,
+          width: 6,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [
+                  Colors.black.withOpacity(0.3),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // 带裁剪的内容
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SingleChildScrollView(
+                physics: BouncingScrollPhysics(),
+                child: Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Obx(() => Column(
+                    children: controller.questions.map((question) => Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: PixelCard(
+                        backgroundColor: AppTheme.blueCardColor,
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                SvgPicture.asset('assets/icons/coin.svg', width: 40, height: 40),
+                                SizedBox(width: 8),
+                                Text(
+                                  '来源: ${question.source}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Q: ${question.content}',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )).toList(),
+                  )),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-    ));
+    );
   }
 
   Widget _buildAnalysisSection() {
@@ -120,9 +184,10 @@ class QuestionBankView extends GetView<QuestionBankController> {
         children: [
           Expanded(
             flex: 1,
-            child: Image.asset(
-              'assets/images/study_character.png',
-              height: 100,
+            child: SvgPicture.asset(
+              'assets/icons/content-files.svg',
+              height: 120,
+              width: 120,
             ),
           ),
           SizedBox(width: 12),

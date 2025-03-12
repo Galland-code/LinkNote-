@@ -99,7 +99,7 @@ class LinkNoteView extends GetView<LinkNoteController> {
           Expanded(
             child: Column(
               children: [
-                SvgPicture.asset('assets/icons/notebook.svg', height: 60),
+                SvgPicture.asset('assets/icons/notebook.svg', height: 80),
                 SizedBox(height: 8),
                 Text('计组', style: AppTheme.subtitleStyle),
               ],
@@ -153,8 +153,8 @@ class LinkNoteView extends GetView<LinkNoteController> {
                 children: [
                   SvgPicture.asset(
                     'assets/icons/bell.svg',
-                    width: 24,
-                    height: 24,
+                    width: 32,
+                    height: 32,
                   ),
                   SizedBox(width: 8),
                   Text('ToDo List:', style: AppTheme.subtitleStyle),

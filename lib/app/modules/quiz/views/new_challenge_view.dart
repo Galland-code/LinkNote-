@@ -21,9 +21,8 @@ class QuizController extends GetxController {
   // Challenge generation
   final RxList<Note> notes = <Note>[].obs;
   final RxList<String> categories = <String>[].obs;
-  final RxString selectedCategory = ''.obs;
-  final RxString selectedNoteId = ''.obs;
-  final RxString selectedDifficulty = '简单'.obs;//默认简单
+  final RxString selectedCategory = ''.obs;  // 选择的笔记分类
+  final Rx<Note?> selectedNote = Rx<Note?>(null);  // 选择的笔记
 
   // Challenge history
   final RxList<Map<String, dynamic>> challengeHistory = <Map<String, dynamic>>[].obs;
@@ -33,12 +32,11 @@ class QuizController extends GetxController {
   final RxBool isAnswered = false.obs;
   final RxInt selectedAnswerIndex = (-1).obs;
 
-  // Timer
-  final RxInt timer = 60.obs;  // Timer for each question
-  late Rxn<int> timerInterval; // Interval for timer updating
-
   // Statistics
   final RxMap<String, dynamic> quizStats = <String, dynamic>{}.obs;
+
+  // 筛选的分类
+  final RxString selectedCategoryFilter = ''.obs;
 
   @override
   void onInit() {
@@ -47,10 +45,9 @@ class QuizController extends GetxController {
     loadNotes();
     loadChallengeHistory();
     updateQuizStats();
-    startTimer();
   }
 
-  // Load all questions
+  // 加载所有问题
   Future<void> loadQuestions() async {
     try {
       isLoading.value = true;
@@ -63,13 +60,13 @@ class QuizController extends GetxController {
     }
   }
 
-  // Load all notes for selection
+  // 加载笔记
   Future<void> loadNotes() async {
     try {
       isLoading.value = true;
       notes.value = await _noteRepository.getNotes();
 
-      // Extract unique categories
+      // 提取唯一分类
       final Set<String> categorySet = {};
       for (var note in notes) {
         categorySet.add(note.category);
@@ -83,10 +80,10 @@ class QuizController extends GetxController {
     }
   }
 
-  // Load challenge history
+  // 加载挑战历史
   void loadChallengeHistory() {
-    // In a real app, this would fetch from the database
-    // Mock data for now
+    // 在真实的应用中，这将从数据库获取数据
+    // 目前使用模拟数据
     challengeHistory.value = [
       {
         'id': '1',
@@ -95,7 +92,7 @@ class QuizController extends GetxController {
         'questionCount': 10,
         'completedCount': 7,
         'date': DateTime.now().subtract(Duration(days: 1)),
-        'questions': [], // Would contain actual questions
+        'questions': [], // 包含实际问题
         'levels': 2,
         'createdAt': '2024',
       },
@@ -106,7 +103,7 @@ class QuizController extends GetxController {
         'questionCount': 8,
         'completedCount': 4,
         'date': DateTime.now().subtract(Duration(days: 3)),
-        'questions': [], // Would contain actual questions
+        'questions': [], // 包含实际问题
         'levels': 2,
         'createdAt': '2024',
       },
@@ -117,32 +114,31 @@ class QuizController extends GetxController {
         'questionCount': 15,
         'completedCount': 15,
         'date': DateTime.now().subtract(Duration(days: 5)),
-        'questions': [], // Would contain actual questions
+        'questions': [], // 包含实际问题
         'levels': 2,
         'createdAt': '2024',
       },
     ];
   }
 
-  // Update quiz statistics
+  // 更新答题统计
   void updateQuizStats() {
     quizStats.value = _quizService.getQuizStats();
   }
 
-  // Select category for challenge
+  // 选择挑战的分类
   void selectCategory(String category) {
     selectedCategory.value = category;
-    selectedNoteId.value = '';
+    selectedNote.value = null;
   }
 
-  // Select specific note for challenge
-  void selectNote(String noteId) {
-    selectedNoteId.value = noteId;
-    final note = notes.firstWhere((n) => n.id == noteId, orElse: () => notes.first);
+  // 选择特定的笔记
+  void selectNote(Note note) {
+    selectedNote.value = note;
     selectedCategory.value = note.category;
   }
 
-  // Generate a new challenge based on selection
+  // 生成新的挑战
   Future<void> generateChallenge() async {
     try {
       isLoading.value = true;
@@ -150,14 +146,16 @@ class QuizController extends GetxController {
       List<Question> challengeQuestions = [];
       String challengeTitle = '';
 
-      if (selectedNoteId.value.isNotEmpty) {
-        final note = notes.firstWhere((n) => n.id == selectedNoteId.value);
-        challengeTitle = '${note.title} - 挑战';
-        challengeQuestions = await _questionRepository.getQuestionsFromNoteContent(note);
+      if (selectedNote.value != null) {
+        // 根据选定的笔记生成挑战
+        challengeTitle = '${selectedNote.value!.title} - 挑战';
+        challengeQuestions = await _questionRepository.getQuestionsFromNoteContent(selectedNote.value!);
       } else if (selectedCategory.value.isNotEmpty) {
+        // 根据选定的分类生成挑战
         challengeTitle = '${selectedCategory.value} - 分类挑战';
         challengeQuestions = await _questionRepository.getQuestionsFromCategory(selectedCategory.value);
       } else {
+        // 如果未选择笔记或分类，则随机生成挑战
         challengeTitle = '随机挑战';
         challengeQuestions = questions.toList()..shuffle();
         challengeQuestions = challengeQuestions.take(10).toList();
@@ -166,9 +164,11 @@ class QuizController extends GetxController {
       final challenge = {
         'id': DateTime.now().millisecondsSinceEpoch.toString(),
         'title': challengeTitle,
-        'source': selectedNoteId.value.isNotEmpty
-            ? notes.firstWhere((n) => n.id == selectedNoteId.value).title
-            : selectedCategory.value.isNotEmpty ? selectedCategory.value : '多个来源',
+        'source': selectedNote.value != null
+            ? selectedNote.value!.title
+            : selectedCategory.value.isNotEmpty
+            ? selectedCategory.value
+            : '多个来源',
         'questionCount': challengeQuestions.length,
         'completedCount': 0,
         'date': DateTime.now(),
@@ -192,7 +192,7 @@ class QuizController extends GetxController {
     }
   }
 
-  // Continue an existing challenge
+  // 继续已有的挑战
   void continueChallenge(Map<String, dynamic> challenge) {
     questions.value = List<Question>.from(challenge['questions']);
     currentQuestionIndex.value = challenge['completedCount'];
@@ -206,7 +206,7 @@ class QuizController extends GetxController {
     }
   }
 
-  // Answer current question
+  // 答题
   Future<void> answerQuestion(int index) async {
     if (isAnswered.value) return;
 
@@ -232,7 +232,7 @@ class QuizController extends GetxController {
     nextQuestion();
   }
 
-  // Move to next question
+  // 下一题
   void nextQuestion() {
     if (currentQuestionIndex.value < questions.length - 1) {
       currentQuestionIndex.value++;
@@ -242,23 +242,4 @@ class QuizController extends GetxController {
       Get.toNamed(Routes.QUIZ_RESULT);
     }
   }
-
-  // Start new challenge
-  void startNewChallenge() {}
-
-  // Start a timer for each question
-  void startTimer() {
-    timerInterval = Rxn<int>();
-    timerInterval.value = 60;
-
-    timerInterval.listen((count) {
-      if (count != null && count > 0) {
-        timer.value = count - 1;
-      }
-    });
-
-    // Simulate timer decrement every second
-    Future.delayed(Duration(seconds: 1), () => startTimer());
-  }
-
 }

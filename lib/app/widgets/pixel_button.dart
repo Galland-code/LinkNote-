@@ -17,7 +17,7 @@ class PixelButton extends StatelessWidget {
     this.backgroundColor = const Color(0xFFB33856),
     this.textColor = Colors.white,
     this.width = double.infinity,
-    this.height = 48,
+    this.height = 60,
   }) : super(key: key);
 
   @override
@@ -29,15 +29,15 @@ class PixelButton extends StatelessWidget {
         height: height,
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.black, width: 2),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.black, width: 4),
         ),
         alignment: Alignment.center,
         child: Text(
           text,
           style: TextStyle(
             color: textColor,
-            fontSize: 16,
+            fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
         ),

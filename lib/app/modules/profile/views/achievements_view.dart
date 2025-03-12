@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:linknote/core/extensions/context_extensions.dart';
 import '../controllers/profile_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../widgets/pixel_card.dart';
@@ -10,20 +12,11 @@ class AchievementsView extends GetView<ProfileController> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppTheme.backgroundColor,
-            image: DecorationImage(
-              image: AssetImage('assets/images/grid_background.png'),
-              repeat: ImageRepeat.repeat,
-            ),
-          ),
+        child: context.withGridBackground(
           child: Column(
             children: [
               _buildHeader(),
-              Expanded(
-                child: _buildAchievementsList(),
-              ),
+              Expanded(child: _buildAchievementsList()),
               _buildBackButton(),
             ],
           ),
@@ -43,10 +36,7 @@ class AchievementsView extends GetView<ProfileController> {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.black, width: 2),
           ),
-          child: Text(
-            '成就列表',
-            style: AppTheme.titleStyle,
-          ),
+          child: Text('成就列表', style: AppTheme.titleStyle),
         ),
       ),
     );
@@ -86,20 +76,30 @@ class AchievementsView extends GetView<ProfileController> {
                   itemBuilder: (context, index) {
                     final achievement = unlockedAchievements[index];
                     return GestureDetector(
-                      onTap: () => controller.navigateToAchievementDetail(achievement),
+                      onTap:
+                          () => controller.navigateToAchievementDetail(
+                            achievement,
+                          ),
                       child: Column(
                         children: [
-                          Image.asset(
-                            achievement.iconPath,
+                          SvgPicture.asset(
+                            achievement.iconPath.endsWith('.svg')
+                                ? achievement.iconPath
+                                : '${achievement.iconPath}.svg',
                             width: 40,
                             height: 40,
+                            colorFilter:
+                                achievement.isUnlocked
+                                    ? null
+                                    : ColorFilter.mode(
+                                      Colors.grey.shade400,
+                                      BlendMode.srcIn,
+                                    ),
                           ),
                           SizedBox(height: 4),
                           Text(
                             achievement.title,
-                            style: TextStyle(
-                              fontSize: 10,
-                            ),
+                            style: TextStyle(fontSize: 10),
                             textAlign: TextAlign.center,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -122,74 +122,88 @@ class AchievementsView extends GetView<ProfileController> {
                   style: AppTheme.subtitleStyle,
                 ),
               ),
-              ...inProgressAchievements.map((achievement) =>
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 12),
-                    child: PixelCard(
-                      padding: EdgeInsets.all(16),
-                      child: GestureDetector(
-                        onTap: () => controller.navigateToAchievementDetail(achievement),
-                        child: Row(
-                          children: [
-                            Image.asset(
-                              achievement.iconPath,
-                              width: 40,
-                              height: 40,
-                              color: Colors.grey[400],
-                            ),
-                            SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    achievement.title,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  if (achievement.description != null &&
-                                      achievement.description!.isNotEmpty) ...[
-                                    SizedBox(height: 4),
+              ...inProgressAchievements
+                  .map(
+                    (achievement) => Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: PixelCard(
+                        padding: EdgeInsets.all(16),
+                        child: GestureDetector(
+                          onTap:
+                              () => controller.navigateToAchievementDetail(
+                                achievement,
+                              ),
+                          child: Row(
+                            children: [
+                              SvgPicture.asset(
+                                achievement.iconPath.endsWith('.svg')
+                                    ? achievement.iconPath
+                                    : '${achievement.iconPath}.svg',
+                                width: 40,
+                                height: 40,
+                                colorFilter: ColorFilter.mode(
+                                  Colors.grey[400]!,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                              SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
                                     Text(
-                                      achievement.description!,
+                                      achievement.title,
                                       style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    if (achievement.description != null &&
+                                        achievement
+                                            .description!
+                                            .isNotEmpty) ...[
+                                      SizedBox(height: 4),
+                                      Text(
+                                        achievement.description!,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                    SizedBox(height: 8),
+                                    LinearProgressIndicator(
+                                      value: _getAchievementProgress(
+                                        achievement,
+                                      ),
+                                      backgroundColor: Colors.grey[300],
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        AppTheme.primaryColor,
+                                      ),
+                                      minHeight: 6,
+                                      borderRadius: BorderRadius.circular(3),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                        achievement.value,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ],
-                                  SizedBox(height: 8),
-                                  LinearProgressIndicator(
-                                    value: _getAchievementProgress(achievement),
-                                    backgroundColor: Colors.grey[300],
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppTheme.primaryColor,
-                                    ),
-                                    minHeight: 6,
-                                    borderRadius: BorderRadius.circular(3),
-                                  ),
-                                  SizedBox(height: 4),
-                                  Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                      achievement.value,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   )
-              ).toList(),
+                  .toList(),
             ],
           ],
         ),

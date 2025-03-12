@@ -46,7 +46,8 @@ class ProfileView extends GetView<ProfileController> {
       ),
     );
   }
-// 标题
+
+  // 标题
   Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 20),
@@ -55,7 +56,7 @@ class ProfileView extends GetView<ProfileController> {
         children: [
           Container(
             width: double.infinity,
-            height: 80, // 根据需要调整高度
+            height: 80,
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/pixel-title.png'), // 替换为你的图片路径
@@ -67,10 +68,7 @@ class ProfileView extends GetView<ProfileController> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(width: 8),
-                  Text(
-                    '个人中心',
-                    style: AppTheme.titleStyle,
-                  ),
+                  Text('个人中心', style: AppTheme.titleStyle),
                   SizedBox(width: 8),
                 ],
               ),
@@ -113,25 +111,24 @@ class ProfileView extends GetView<ProfileController> {
                 children: [
                   Text(
                     controller.currentUser.value?.username ?? '未登录',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 4),
                   Text(
                     'Lv.${controller.currentUser.value?.level ?? 1} · ${controller.currentUser.value?.experiencePoints ?? 0}经验',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                   SizedBox(height: 8),
                   // 等级进度条
                   LinearProgressIndicator(
-                    value: (controller.currentUser.value?.experiencePoints ?? 0) % 100 / 100,
+                    value:
+                        (controller.currentUser.value?.experiencePoints ?? 0) %
+                        100 /
+                        100,
                     backgroundColor: Colors.grey[300],
-                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppTheme.primaryColor,
+                    ),
                     minHeight: 8,
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -149,7 +146,8 @@ class ProfileView extends GetView<ProfileController> {
       ),
     );
   }
-// 每日任务
+
+  // 每日任务
   Widget _buildDailyTasksSection() {
     return Padding(
       padding: EdgeInsets.all(16),
@@ -162,17 +160,11 @@ class ProfileView extends GetView<ProfileController> {
               children: [
                 Icon(Icons.calendar_today, size: 30),
                 SizedBox(width: 4),
-                Text(
-                  '今日任务',
-                  style: AppTheme.subtitleStyle,
-                ),
+                Text('今日任务', style: AppTheme.subtitleStyle),
                 Spacer(),
                 Text(
                   controller.getFormattedDate(),
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -203,9 +195,7 @@ class ProfileView extends GetView<ProfileController> {
                         children: [
                           Text(
                             '今日获得 ${controller.getTodayExperiencePoints()} 经验',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           SizedBox(height: 4),
                           Text(
@@ -222,7 +212,9 @@ class ProfileView extends GetView<ProfileController> {
                 ),
                 SizedBox(height: 16),
                 // 任务列表
-                ...controller.dailyTasks.map((task) => _buildTaskItem(task)).toList(),
+                ...controller.dailyTasks
+                    .map((task) => _buildTaskItem(task))
+                    .toList(),
               ],
             ),
           ),
@@ -243,16 +235,20 @@ class ProfileView extends GetView<ProfileController> {
               width: 24,
               height: 24,
               decoration: BoxDecoration(
-                color: task.isCompleted ? AppTheme.primaryColor : Colors.transparent,
+                color:
+                    task.isCompleted
+                        ? AppTheme.primaryColor
+                        : Colors.transparent,
                 border: Border.all(
                   color: task.isCompleted ? AppTheme.primaryColor : Colors.grey,
                   width: 2,
                 ),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: task.isCompleted
-                  ? Icon(Icons.check, color: Colors.white, size: 30)
-                  : null,
+              child:
+                  task.isCompleted
+                      ? Icon(Icons.check, color: Colors.white, size: 30)
+                      : null,
             ),
           ),
           SizedBox(width: 12),
@@ -266,7 +262,8 @@ class ProfileView extends GetView<ProfileController> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                    decoration:
+                        task.isCompleted ? TextDecoration.lineThrough : null,
                     color: task.isCompleted ? Colors.grey : Colors.black,
                   ),
                 ),
@@ -276,7 +273,8 @@ class ProfileView extends GetView<ProfileController> {
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[600],
-                      decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                      decoration:
+                          task.isCompleted ? TextDecoration.lineThrough : null,
                     ),
                   ),
               ],
@@ -309,7 +307,8 @@ class ProfileView extends GetView<ProfileController> {
 
   Widget _buildAchievementSection() {
     final unlockedAchievements = controller.getUnlockedAchievements();
-    final inProgressAchievements = controller.getInProgressAchievements().take(3).toList(); // 只显示3个进行中成就
+    final inProgressAchievements =
+        controller.getInProgressAchievements().take(3).toList(); // 只显示3个进行中成就
 
     return Padding(
       padding: EdgeInsets.all(16),
@@ -320,12 +319,9 @@ class ProfileView extends GetView<ProfileController> {
             padding: EdgeInsets.only(left: 8, bottom: 8),
             child: Row(
               children: [
-                Icon(Icons.emoji_events, size: 16),
-                SizedBox(width: 4),
-                Text(
-                  '成就',
-                  style: AppTheme.subtitleStyle,
-                ),
+                Icon(Icons.emoji_events, size: 28),
+                SizedBox(width: 8),
+                Text('成就', style: AppTheme.subtitleStyle),
                 Spacer(),
                 GestureDetector(
                   onTap: () => Get.toNamed(Routes.PROFILE_ACHIEVEMENTS),
@@ -347,40 +343,41 @@ class ProfileView extends GetView<ProfileController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '最近解锁',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text('最近解锁', style: TextStyle(fontWeight: FontWeight.bold)),
                   SizedBox(height: 12),
                   Row(
-                    children: unlockedAchievements.take(3).map((achievement) =>
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => controller.navigateToAchievementDetail(achievement),
-                            child: Column(
-                              children: [
-                                Image.asset(
-                                  achievement.iconPath,
-                                  width: 40,
-                                  height: 40,
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  achievement.title,
-                                  style: TextStyle(
-                                    fontSize: 12,
+                    children:
+                        unlockedAchievements
+                            .take(3)
+                            .map(
+                              (achievement) => Expanded(
+                                child: GestureDetector(
+                                  onTap:
+                                      () => controller
+                                          .navigateToAchievementDetail(
+                                            achievement,
+                                          ),
+                                  child: Column(
+                                    children: [
+                                      SvgPicture.asset(
+                                        achievement.iconPath,
+                                        width: 40,
+                                        height: 40,
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        achievement.title,
+                                        style: TextStyle(fontSize: 12),
+                                        textAlign: TextAlign.center,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
                                   ),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ],
-                            ),
-                          ),
-                        )
-                    ).toList(),
+                              ),
+                            )
+                            .toList(),
                   ),
                 ],
               ),
@@ -394,63 +391,70 @@ class ProfileView extends GetView<ProfileController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '进行中',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text('进行中', style: TextStyle(fontWeight: FontWeight.bold)),
                   SizedBox(height: 12),
-                  ...inProgressAchievements.map((achievement) =>
-                      Container(
-                        margin: EdgeInsets.only(bottom: 12),
-                        child: GestureDetector(
-                          onTap: () => controller.navigateToAchievementDetail(achievement),
-                          child: Row(
-                            children: [
-                              Image.asset(
-                                achievement.iconPath,
-                                width: 32,
-                                height: 32,
-                                color: Colors.grey[400],
-                              ),
-                              SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      achievement.title,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    SizedBox(height: 2),
-                                    LinearProgressIndicator(
-                                      value: _getAchievementProgress(achievement),
-                                      backgroundColor: Colors.grey[300],
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        AppTheme.primaryColor,
-                                      ),
-                                      minHeight: 6,
-                                      borderRadius: BorderRadius.circular(3),
-                                    ),
-                                  ],
+                  ...inProgressAchievements
+                      .map(
+                        (achievement) => Container(
+                          margin: EdgeInsets.only(bottom: 12),
+                          child: GestureDetector(
+                            onTap:
+                                () => controller.navigateToAchievementDetail(
+                                  achievement,
                                 ),
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                achievement.value,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
+                            child: Row(
+                              children: [
+                                SvgPicture.asset(
+                                  achievement.iconPath,
+                                  width: 32,
+                                  height: 32,
+                                  colorFilter: ColorFilter.mode(
+                                    Colors.grey[400]!,
+                                    BlendMode.srcIn,
+                                  ),
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        achievement.title,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      SizedBox(height: 2),
+                                      LinearProgressIndicator(
+                                        value: _getAchievementProgress(
+                                          achievement,
+                                        ),
+                                        backgroundColor: Colors.grey[300],
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              AppTheme.primaryColor,
+                                            ),
+                                        minHeight: 6,
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  achievement.value,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       )
-                  ).toList(),
+                      .toList(),
                 ],
               ),
             ),
@@ -484,27 +488,29 @@ class ProfileView extends GetView<ProfileController> {
   }
 
   Widget _buildBottomNavBar() {
-    return Obx(() => BottomNavBar(
-      currentIndex: controller.currentNavIndex.value,
-      onTap: (index) {
-        controller.currentNavIndex.value = index;
+    return Obx(
+      () => BottomNavBar(
+        currentIndex: controller.currentNavIndex.value,
+        onTap: (index) {
+          controller.currentNavIndex.value = index;
 
-        // 导航
-        switch (index) {
-          case 0:
-            Get.offAllNamed(Routes.LINK_NOTE);
-            break;
-          case 1:
-            Get.offAllNamed(Routes.QUIZ);
-            break;
-          case 2:
-            Get.offAllNamed(Routes.QUESTION_BANK);
-            break;
-          case 3:
-          // 已经在个人中心页面
-            break;
-        }
-      },
-    ));
+          // 导航
+          switch (index) {
+            case 0:
+              Get.offAllNamed(Routes.LINK_NOTE);
+              break;
+            case 1:
+              Get.offAllNamed(Routes.QUIZ);
+              break;
+            case 2:
+              Get.offAllNamed(Routes.QUESTION_BANK);
+              break;
+            case 3:
+              // 已经在个人中心页面
+              break;
+          }
+        },
+      ),
+    );
   }
 }

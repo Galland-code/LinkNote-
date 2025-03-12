@@ -4,8 +4,6 @@ import '../controllers/link_note_controller.dart';
 class LinkNoteBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<LinkNoteController>(
-          () => LinkNoteController(),
-    );
+    Get.lazyPut<LinkNoteController>(() => LinkNoteController());
   }
 }

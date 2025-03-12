@@ -1,24 +1,20 @@
+// lib/app/modules/quiz/views/quiz_history_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:linknote/core/extensions/context_extensions.dart';
 import '../controllers/quiz_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../widgets/pixel_card.dart';
 import '../../../widgets/pixel_button.dart';
+import '../../../widgets/pixel_empty_state.dart';
 
 class QuizHistoryView extends GetView<QuizController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppTheme.backgroundColor,
-            image: DecorationImage(
-              image: AssetImage('assets/images/grid_background.png'),
-              repeat: ImageRepeat.repeat,
-            ),
-          ),
+        child: context.withGridBackground(
           child: Column(
             children: [
               _buildHeader(),
@@ -36,67 +32,66 @@ class QuizHistoryView extends GetView<QuizController> {
   Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 20),
-      child: Center(
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black, width: 2),
+      child: Stack(
+        alignment: Alignment.centerRight, // 右对齐
+        children: [
+          Container(
+            width: double.infinity,
+            height: 80,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/pixel-title.png'), // 替换为你的图片路径
+                fit: BoxFit.contain,
+              ),
+            ),
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(width: 8),
+                  Text('挑战历史', style: AppTheme.titleStyle),
+                  SizedBox(width: 8),
+                ],
+              ),
+            ),
           ),
-          child: Text(
-            '历史记录',
-            style: AppTheme.titleStyle,
-          ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildHistoryList() {
-    // 这里应该从数据库获取历史记录
-    // 暂时使用模拟数据
-    List<Map<String, dynamic>> historyItems = [
-      {
-        'date': DateTime.now().subtract(Duration(days: 1)),
-        'quizName': '计组复习测验',
-        'score': 85.0,
-        'questions': 20,
-        'correctAnswers': 17,
-      },
-      {
-        'date': DateTime.now().subtract(Duration(days: 3)),
-        'quizName': 'RAG技术测验',
-        'score': 90.0,
-        'questions': 10,
-        'correctAnswers': 9,
-      },
-      {
-        'date': DateTime.now().subtract(Duration(days: 5)),
-        'quizName': '测试理论测验',
-        'score': 75.0,
-        'questions': 12,
-        'correctAnswers': 9,
-      },
-    ];
+    return Obx(() {
+      if (controller.challengeHistory.isEmpty) {
+        return PixelEmptyState(
+          message: '暂无历史挑战记录',
+          imagePath: 'assets/images/empty_history.png',
+          buttonText: '开始新挑战',
+          onButtonPressed: () => Get.back(),
+        );
+      }
 
-    return ListView.builder(
-      padding: EdgeInsets.all(16),
-      itemCount: historyItems.length,
-      itemBuilder: (context, index) {
-        final item = historyItems[index];
-        return _buildHistoryItem(item);
-      },
-    );
+      return ListView.builder(
+        padding: EdgeInsets.all(16),
+        itemCount: controller.challengeHistory.length,
+        itemBuilder: (context, index) {
+          final challenge = controller.challengeHistory[index];
+          return _buildHistoryItem(challenge);
+        },
+      );
+    });
   }
 
-  Widget _buildHistoryItem(Map<String, dynamic> item) {
-    final Color scoreColor = item['score'] >= 80 ? Colors.green :
-    item['score'] >= 60 ? Colors.orange :
-    Colors.red;
+  Widget _buildHistoryItem(Map<String, dynamic> challenge) {
+    final bool isCompleted = challenge['completedCount'] == challenge['questionCount'];
+    final double progress = challenge['questionCount'] > 0
+        ? challenge['completedCount'] / challenge['questionCount']
+        : 0;
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: 16),
+    final Color statusColor = isCompleted ? Colors.green : AppTheme.primaryColor;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 16),
       child: PixelCard(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -105,54 +100,83 @@ class QuizHistoryView extends GetView<QuizController> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  item['quizName'],
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    challenge['title'],
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: scoreColor.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: scoreColor),
+                    color: statusColor.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: statusColor),
                   ),
                   child: Text(
-                    '${item['score']}分',
+                    isCompleted ? '已完成' : '进行中',
                     style: TextStyle(
-                      color: scoreColor,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
+                      color: statusColor,
                     ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '来源: ${challenge['source']}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                Text(
+                  DateFormat('yyyy/MM/dd').format(challenge['date']),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
                   ),
                 ),
               ],
             ),
             SizedBox(height: 12),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '${DateFormat('yyyy年MM月dd日').format(item['date'])}',
-                  style: TextStyle(
-                    color: Colors.grey[600],
+                Expanded(
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                    minHeight: 8,
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
+                SizedBox(width: 12),
                 Text(
-                  '${item['correctAnswers']}/${item['questions']} 正确',
+                  '${challenge['completedCount']}/${challenge['questionCount']}',
                   style: TextStyle(
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: item['correctAnswers'] / item['questions'],
-              backgroundColor: Colors.grey[300],
-              color: scoreColor,
-              minHeight: 8,
+            SizedBox(height: 16),
+            PixelButton(
+              text: isCompleted ? '重新挑战' : '继续挑战',
+              onPressed: () => controller.continueChallenge(challenge),
+              width: double.infinity,
+              height: 40,
+              backgroundColor: statusColor,
             ),
           ],
         ),
@@ -165,10 +189,9 @@ class QuizHistoryView extends GetView<QuizController> {
       padding: EdgeInsets.all(16),
       child: PixelButton(
         text: '返回',
-        onPressed: () {
-          Get.back();
-        },
+        onPressed: () => Get.back(),
         backgroundColor: Colors.grey,
+        width: double.infinity,
       ),
     );
   }

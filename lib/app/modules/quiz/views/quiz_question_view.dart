@@ -5,7 +5,6 @@ import '../controllers/quiz_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../widgets/pixel_card.dart';
 import '../../../widgets/pixel_button.dart';
-
 class QuizQuestionView extends GetView<QuizController> {
   @override
   Widget build(BuildContext context) {
@@ -21,15 +20,16 @@ class QuizQuestionView extends GetView<QuizController> {
 
             final currentQuestion = controller.questions[controller.currentQuestionIndex.value];
 
-            return Column(
-              children: [
-                _buildHeader(),
-                _buildProgressBar(),
-                _buildQuestionCard(currentQuestion),
-                _buildOptions(currentQuestion),
-                Spacer(),
-                _buildNavigationButtons(),
-              ],
+            return SingleChildScrollView(  // Add scrollable functionality
+              child: Column(
+                children: [
+                  _buildHeader(),
+                  _buildProgressBar(),
+                  _buildQuestionCard(currentQuestion),
+                  _buildOptions(currentQuestion),
+                  _buildNavigationButtons(),
+                ],
+              ),
             );
           }),
         ),
@@ -104,12 +104,11 @@ class QuizQuestionView extends GetView<QuizController> {
           children: [
             Row(
               children: [
-                Image.asset('assets/images/pencil.png', width: 24, height: 24),
-                SizedBox(width: 8),
                 Text(
                   '来源: ${question.source}',
                   style: TextStyle(
                     color: Colors.white,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -165,7 +164,7 @@ class QuizQuestionView extends GetView<QuizController> {
         margin: EdgeInsets.only(bottom: 12),
         child: PixelCard(
           backgroundColor: backgroundColor,
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.all(12),
           child: Row(
             children: [
               Container(
