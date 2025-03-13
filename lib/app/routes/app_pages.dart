@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:linknote/app/modules/link_note/views/notes_by_category_view.dart';
 
 // Auth Module
 import '../modules/auth/bindings/auth_binding.dart';
@@ -7,6 +8,7 @@ import '../modules/auth/views/login_view.dart';
 import '../modules/auth/views/register_view.dart';
 
 // Quiz Module
+import '../modules/link_note/views/link_note_upload_pdf_view.dart';
 import '../modules/profile/views/achievement_detail_view.dart';
 import '../modules/quiz/bindings/quiz_binding.dart';
 import '../modules/quiz/views/quiz_challenge_select_view.dart';
@@ -104,6 +106,7 @@ class AppPages {
           name: '/edit',
           page: () => LinkNoteEditView(),
         ),
+        GetPage(name: '/uploadPDF', page: () => LinkNoteUploadPDFView()),
         GetPage(
           name: '/detail',
           page: () => LinkNoteDetailView(),
@@ -112,6 +115,8 @@ class AppPages {
           name: '/category',
           page: () => LinkNoteCategoryView(),
         ),
+        GetPage(name: '/notes_by_category', page: () => const NotesByCategoryView()),
+
       ],
     ),
 

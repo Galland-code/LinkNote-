@@ -1,12 +1,26 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart' as dio;
+import 'package:flutter/cupertino.dart' as pw;
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/widgets.dart' as pdfWidgets;
 import 'package:uuid/uuid.dart';
+import '../../../../core/values/app_constants.dart';
 import '../../../data/models/note.dart';
 import '../../../data/repositories/note_repository.dart';
+import '../../../data/services/upload_service.dart';
 import '../../../routes/app_routes.dart';
+import 'package:path/path.dart' as path;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
+import '../../../data/models/pdf_document.dart';
 
 class LinkNoteController extends GetxController {
   // 依赖注入
   final NoteRepository _noteRepository = Get.find<NoteRepository>();
+  final UploadService _uploadService = UploadService();
 
   // 可观察变量
   final RxInt currentNavIndex = 0.obs;
@@ -23,6 +37,10 @@ class LinkNoteController extends GetxController {
   final RxString noteCategory = ''.obs;
 
   final String currentUserId = ''; // 添加 currentUserId 变量，确保它被正确赋值
+  var userId = ''.obs;
+
+  final RxList<PdfDocument> pdfDocuments = <PdfDocument>[].obs;
+  final RxBool isLoadingPdf = false.obs;
 
   @override
   void onInit() {
@@ -30,6 +48,15 @@ class LinkNoteController extends GetxController {
     loadNotes();
     loadTodoItems();
     extractCategories();
+    loadPdfDocuments();
+  }
+
+  void setUserId(String id) {
+    userId.value = id; // 设置 userId
+  }
+
+  String getUserId() {
+    return userId.value; // 获取 userId
   }
 
   // 加载笔记
@@ -147,5 +174,174 @@ class LinkNoteController extends GetxController {
   // 按分类筛选笔记
   List<Note> getNotesByCategory(String category) {
     return notes.where((note) => note.category == category).toList();
+  }
+
+  // 上传 PDF 文件的函数
+  Future<void> uploadPDF(File file, String userId) async {
+    try {
+      await _uploadService.uploadPDF(file, userId);
+      Get.snackbar('上传成功', 'PDF 文件上传成功！');
+    } catch (e) {
+      Get.snackbar('上传失败', '文件上传失败，请重试！');
+    }
+  }
+
+  // 新增的导出 PDF 方法
+  Future<void> exportNoteAsPDF(String noteTitle, String noteContent) async {
+    // 请求存储权限（在 Android 上访问下载目录需要权限）
+    await requestStoragePermission();
+
+    // 获取设备的 Downloads 文件夹路径
+    final directory = await getExternalStorageDirectory(); // 获取外部存储目录
+    if (directory == null) {
+      Get.snackbar('Error', '无法获取存储目录');
+      return;
+    }
+
+    // 构建下载目录路径
+    final downloadDirectory = path.join(directory.path, 'Download'); // 设备的 Downloads 文件夹
+
+    // 确保下载目录存在
+    final downloadDir = Directory(downloadDirectory);
+    if (!await downloadDir.exists()) {
+      await downloadDir.create(recursive: true); // 创建目录
+    }
+
+    // 构建文件路径并保存
+    final filePath = path.join(downloadDirectory, '$noteTitle.pdf');
+    final file = File(filePath);
+
+    // 创建 PDF 文档
+    final pdf = pdfWidgets.Document();
+    pdf.addPage(
+      pdfWidgets.Page(
+        build: (pdfWidgets.Context context) {
+          return pdfWidgets.Center(
+            child: pdfWidgets.Text(
+              noteContent,
+              style: pdfWidgets.TextStyle(fontSize: 24),
+            ),
+          );
+        },
+      ),
+    );
+
+    try {
+      // 保存 PDF 文件到设备的 Downloads 文件夹
+      await file.writeAsBytes(await pdf.save());
+
+      // 提示用户文件已保存
+      Get.snackbar('Success', 'PDF 已保存到: $filePath');
+      print('PDF 文件已保存到: $filePath');
+    } catch (e) {
+      // 如果保存失败，显示错误消息
+      Get.snackbar('Error', '导出 PDF 失败: $e');
+    }
+  }
+
+  // 请求存储权限
+  Future<void> requestStoragePermission() async {
+    var status = await Permission.storage.status;
+    if (!status.isGranted) {
+      await Permission.storage.request();
+    }
+  }
+
+  // 显示导出 PDF 选项
+  void showExportOptionsDialog(
+    BuildContext context,
+    String noteTitle,
+    String noteContent,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('导出选项'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: Text('导出为 PDF'),
+                onTap: () {
+                  Navigator.pop(context);
+                  exportNoteAsPDF(noteTitle, noteContent);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // 加载PDF文件列表
+  Future<void> loadPdfDocuments() async {
+    try {
+      isLoadingPdf.value = true;
+      
+      // 使用Dio获取PDF文件列表
+      final response = await dio.Dio().get(
+        '${AppConstants.BASE_URL}/files/list',
+        queryParameters: {'userId': currentUserId},
+      );
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data['data'];
+        pdfDocuments.value = data.map((item) => PdfDocument.fromJson(item)).toList();
+      }
+    } catch (e) {
+      print('加载PDF文件失败: $e');
+    } finally {
+      isLoadingPdf.value = false;
+    }
+  }
+  
+  // 查看PDF文件
+  Future<void> viewPdfDocument(PdfDocument document) async {
+    try {
+      // 显示加载指示器
+      Get.dialog(
+        Center(child: CircularProgressIndicator()),
+        barrierDismissible: false,
+      );
+      
+      // 获取临时目录
+      final tempDir = await getTemporaryDirectory();
+      final filePath = '${tempDir.path}/${document.fileName}';
+      final file = File(filePath);
+      
+      // 检查文件是否已下载
+      if (!await file.exists()) {
+        // 下载文件
+        final response = await dio.Dio().get(
+          '${AppConstants.BASE_URL}/files/download/${document.id}',
+          options: dio.Options(responseType: dio.ResponseType.bytes),
+        );
+        
+        await file.writeAsBytes(response.data);
+      }
+      
+      // 关闭加载对话框
+      Get.back();
+      
+      // 打开PDF查看器
+      Get.to(() => PDFView(
+        filePath: filePath,
+        enableSwipe: true,
+        swipeHorizontal: true,
+        autoSpacing: true,
+        pageFling: true,
+        pageSnap: true,
+        defaultPage: 0,
+        fitPolicy: FitPolicy.BOTH,
+        onError: (error) {
+          Get.snackbar('错误', '无法加载PDF: $error');
+        },
+      ));
+    } catch (e) {
+      Get.back(); // 关闭加载对话框
+      Get.snackbar('错误', '查看PDF失败: $e');
+    }
   }
 }

@@ -11,7 +11,7 @@ class NoteRepository {
   // 从API获取所有笔记
   Future<List<Note>> getNotesFromApi() async {
     try {
-      final response = await _apiProvider.get(AppConstants.NOTES);
+      final response = await _apiProvider.get('${AppConstants.BASE_URL}${AppConstants.REGISTER}');
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
         final List<Note> notes =

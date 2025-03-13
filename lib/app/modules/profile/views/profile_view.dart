@@ -307,9 +307,9 @@ class ProfileView extends GetView<ProfileController> {
 
   Widget _buildAchievementSection() {
     final unlockedAchievements = controller.getUnlockedAchievements();
+    print(unlockedAchievements);
     final inProgressAchievements =
         controller.getInProgressAchievements().take(3).toList(); // 只显示3个进行中成就
-
     return Padding(
       padding: EdgeInsets.all(16),
       child: Column(

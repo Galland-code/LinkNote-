@@ -13,8 +13,8 @@ class UserRepository {
   Future<UserModel> login(String account, String password) async {
     try {
       final response = await _apiProvider.post(
-        AppConstants.LOGIN,
-        data: {'usrname': account, 'password': password},
+        '${AppConstants.BASE_URL}${AppConstants.LOGIN}',
+        data: {'account': account, 'password': password},
       );
 
       // 保存Token
@@ -41,7 +41,7 @@ class UserRepository {
   ) async {
     try {
       final response = await _apiProvider.post(
-        AppConstants.REGISTER,
+        '${AppConstants.BASE_URL}${AppConstants.REGISTER}',
         data: {
           'username': username,
           'email': email,
@@ -59,7 +59,9 @@ class UserRepository {
   // 获取当前用户
   Future<UserModel?> getCurrentUser() async {
     try {
-      final response = await _apiProvider.get(AppConstants.USER_INFO);
+      final response = await _apiProvider.get(
+        '${AppConstants.BASE_URL}${AppConstants.USER_INFO}',
+      );
       return UserModel.fromJson(response.data);
     } catch (e) {
       return UserModel(
@@ -72,23 +74,13 @@ class UserRepository {
         experiencePoints: 475,
       );
     }
-    // 模拟数据
-    return UserModel(
-      id: '1',
-      username: '学习达人',
-      email: 'user@example.com',
-      avatarIndex: 0,
-      createdAt: DateTime.now().subtract(Duration(days: 30)),
-      level: 5,
-      experiencePoints: 475,
-    );
   }
 
   // 更新用户信息
   Future<UserModel> updateUser(UserModel user) async {
     try {
       final response = await _apiProvider.put(
-        AppConstants.UPDATE_PROFILE,
+        '${AppConstants.BASE_URL}${AppConstants.UPDATE_PROFILE}',
         data: user.toJson(),
       );
 
@@ -105,19 +97,21 @@ class UserRepository {
     String password,
     int avatarIndex,
   ) async {
-    // 实际应用中，这里应该调用API注册用户
-    await Future.delayed(Duration(seconds: 1)); // 模拟网络延迟
-
-    // 模拟返回新创建的用户
-    return UserModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      username: username,
-      email: email,
-      avatarIndex: avatarIndex,
-      createdAt: DateTime.now(),
-      level: 1,
-      experiencePoints: 0,
-    );
+    try {
+      final response = await _apiProvider.post(
+        '${AppConstants.BASE_URL}${AppConstants.REGISTER}',
+        data: {
+          'username': username,
+          'email': email,
+          'password': password,
+          'avatarIndex': avatarIndex,
+        },
+      );
+      print(response.data);
+      return UserModel.fromJson(response.data);
+    } catch (e) {
+      throw Exception('注册失败: $e');
+    }
   }
 
   Future<UserModel?> getUserById(String userId) async {

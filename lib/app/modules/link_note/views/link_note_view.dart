@@ -1,9 +1,11 @@
 // lib/app/modules/link_note/views/link_note_view.dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:linknote/core/extensions/context_extensions.dart';
+import '../../../data/models/note.dart';
 import '../controllers/link_note_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../routes/app_routes.dart';
@@ -29,6 +31,7 @@ class LinkNoteView extends GetView<LinkNoteController> {
                       _buildNoteBooksSection(),
                       _buildTodoSection(),
                       _buildRecentNotesSection(),
+                      _buildPdfDocumentsSection(),
                     ],
                   ),
                 ),
@@ -62,10 +65,7 @@ class LinkNoteView extends GetView<LinkNoteController> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(width: 8),
-                  Text(
-                    'LinkNote',
-                    style: AppTheme.titleStyle,
-                  ),
+                  Text('LinkNote', style: AppTheme.titleStyle),
                   SizedBox(width: 8),
                 ],
               ),
@@ -73,7 +73,7 @@ class LinkNoteView extends GetView<LinkNoteController> {
           ),
           Positioned(
             // 使用 Positioned 来放置 FloatingActionButton
-            right: 0, // 右侧对齐
+            right: 20, // 右侧对齐
             child: FloatingActionButton(
               onPressed:
                   () => Get.toNamed(Routes.LINK_NOTE_EDIT), // 点击按钮时导航到编辑页面
@@ -90,53 +90,124 @@ class LinkNoteView extends GetView<LinkNoteController> {
     );
   }
 
-  // TODO: 改成变量渲染
   Widget _buildNoteBooksSection() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              children: [
-                SvgPicture.asset('assets/icons/notebook.svg', height: 80),
-                SizedBox(height: 8),
-                Text('计组', style: AppTheme.subtitleStyle),
-              ],
+    return Obx(() {
+      // 如果数据正在加载，显示加载指示器
+      if (controller.isLoading.value) {
+        return Center(child: CircularProgressIndicator());
+      }
+
+      // 获取去重后的标签，从 controller.notes 获取
+      Set<String> uniqueCategories = {};
+      for (var note in controller.notes) {
+        uniqueCategories.add(note.category);
+      }
+
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(left: 8, bottom: 8),
+              child: Text('笔记分类', style: AppTheme.subtitleStyle),
             ),
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: PixelCard(
-              padding: EdgeInsets.all(12),
-              child: Column(
+            // 使用 SingleChildScrollView 和 Row 来实现横向滚动
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal, // 设置横向滚动
+              child: Row(
                 children: [
-                  SvgPicture.asset('assets/icons/notebook.svg', height: 40),
-                  SizedBox(height: 8),
-                  Text('RAG技术', style: AppTheme.subtitleStyle),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: PixelCard(
-              padding: EdgeInsets.all(12),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.add_circle_outline,
-                    size: 40,
-                    color: AppTheme.primaryColor,
+                  // 遍历分类标签并显示
+                  ...uniqueCategories.map((category) {
+                    return Padding(
+                      padding: EdgeInsets.only(right: 12),
+                      child: GestureDetector(
+                        onTap: () {
+                          // 点击标签时跳转到该标签的笔记列表页面
+                          Get.toNamed(
+                            Routes.LINK_NOTE_NOTES_BY_CATEGORY,
+                            arguments: category,
+                          );
+                        },
+                        child: Column(
+                          children: [
+                            SvgPicture.asset(
+                              'assets/icons/notebook.svg',
+                              height: 80,
+                            ),
+                            SizedBox(height: 8),
+                            Text('$category', style: AppTheme.subtitleStyle),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  Padding(
+                    padding: EdgeInsets.only(right: 12), // "新建" 按钮与其他标签之间的间距
+                    child: PixelCard(
+                      padding: EdgeInsets.all(12),
+                      child: GestureDetector(
+                        onTap: () {
+                          _showCreateOrUploadDialog(Get.context!);
+                        },
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.add_circle_outline,
+                              size: 40,
+                              color: AppTheme.primaryColor,
+                            ),
+                            SizedBox(height: 8),
+                            Text('新建', style: AppTheme.subtitleStyle),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                  SizedBox(height: 8),
-                  Text('新建', style: AppTheme.subtitleStyle),
                 ],
               ),
             ),
+          ],
+        ),
+      );
+    });
+  }
+
+  void _showCreateOrUploadDialog(BuildContext context) {
+    // 弹出选择新建笔记或上传 PDF 的对话框
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('选择操作'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: Text('创建笔记'),
+                onTap: () {
+                  // 点击后创建新笔记
+                  Navigator.pop(context);
+                  Get.toNamed(Routes.LINK_NOTE_EDIT);
+                },
+              ),
+              ListTile(
+                title: Text('上传 PDF'),
+                onTap: () {
+                  // 点击后上传 PDF
+                  Navigator.pop(context);
+                  // 确保上下文有效
+                  if (Get.context != null) {
+                    Get.toNamed(Routes.LINK_NOTE_UPLOAD_PDF); // 确保这个路由是有效的
+                  } else {
+                    print("上下文无效，无法导航到上传 PDF 页面");
+                  }
+                },
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -250,11 +321,15 @@ class LinkNoteView extends GetView<LinkNoteController> {
             ...controller.notes
                 .map(
                   (note) => GestureDetector(
-                    onTap:
-                        () => Get.toNamed(
-                          Routes.LINK_NOTE_DETAIL,
-                          arguments: {'note': note},
-                        ),
+                    onLongPress: () {
+                      // 通过长按导出 PDF
+                      final currentContext = Get.context!; // 获取当前上下文
+                      controller.showExportOptionsDialog(
+                        currentContext,
+                        note.title,
+                        note.content,
+                      );
+                    },
                     child: Padding(
                       padding: EdgeInsets.only(bottom: 12),
                       child: PixelCard(
@@ -337,6 +412,114 @@ class LinkNoteView extends GetView<LinkNoteController> {
         ),
       ),
     );
+  }
+
+  Widget _buildPdfDocumentsSection() {
+    return Obx(() {
+      if (controller.isLoadingPdf.value) {
+        return Center(child: CircularProgressIndicator());
+      }
+
+      if (controller.pdfDocuments.isEmpty) {
+        return Padding(
+          padding: EdgeInsets.all(16),
+          child: Center(
+            child: Column(
+              children: [
+                Icon(Icons.picture_as_pdf, size: 48, color: Colors.grey),
+                SizedBox(height: 8),
+                Text('没有PDF文档', style: TextStyle(color: Colors.grey)),
+              ],
+            ),
+          ),
+        );
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('PDF 文档', style: AppTheme.subtitleStyle),
+                TextButton(
+                  onPressed: () => controller.loadPdfDocuments(),
+                  child: Text('刷新'),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            height: 180,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              itemCount: controller.pdfDocuments.length,
+              itemBuilder: (context, index) {
+                final doc = controller.pdfDocuments[index];
+                return GestureDetector(
+                  onTap: () => controller.viewPdfDocument(doc),
+                  child: Container(
+                    width: 140,
+                    margin: EdgeInsets.only(right: 16),
+                    child: PixelCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 80,
+                            width: double.infinity,
+                            color: Colors.red.shade100,
+                            child: Center(
+                              child: Icon(
+                                Icons.picture_as_pdf,
+                                color: Colors.red,
+                                size: 40,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(8),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  doc.fileName,
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  doc.category ?? '未分类',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                Text(
+                                  '${doc.uploadTime.year}/${doc.uploadTime.month}/${doc.uploadTime.day}',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    });
   }
 
   Widget _buildBottomNavBar() {

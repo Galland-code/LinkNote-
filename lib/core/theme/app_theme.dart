@@ -12,6 +12,8 @@ class AppTheme {
   static final Color pinkCardColor = Color(0xFFE8A0B0);
   static final Color yellowCardColor = Color(0xFFF5DEB3);
   static final Color greenCardColor = Color(0xFFBED7C1);
+  static final Color errorColor = Color(0xFFB44663);
+
 
   // 文本样式
   static final TextStyle titleStyle = TextStyle(

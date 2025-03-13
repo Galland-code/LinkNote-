@@ -114,7 +114,7 @@ class MyApp extends StatelessWidget {
       title: 'LinkNote Study App',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false, // 去除调试横幅
-      defaultTransition: Transition.fade, // 页面切换动画
+      defaultTransition: Transition.cupertino, // 页面切换动画
 
       // 初始路由，如果有登录状态则直接进入主页，否则进入登录页
       initialRoute: AppPages.INITIAL,

@@ -67,7 +67,7 @@ class MockData {
         content:
             'Key points about the competition and participation requirements...',
         createdAt: DateTime(2024, 12, 5),
-        category: '竞赛笔记',
+        category: '竞赛',
       ),
       Note(
         id: '2',
@@ -75,7 +75,7 @@ class MockData {
         userId: 'user123',
         content: 'Computer organization and architecture review notes...',
         createdAt: DateTime(2024, 12, 1),
-        category: '学习笔记',
+        category: '学习',
       ),
       Note(
         id: '3',
@@ -83,7 +83,7 @@ class MockData {
         userId: 'user123',
         content: 'Notes on Retrieval Augmented Generation technology...',
         createdAt: DateTime(2024, 11, 28),
-        category: '技术笔记',
+        category: '技术',
       ),
       Note(
         id: '4',
@@ -91,7 +91,7 @@ class MockData {
         userId: 'user123',
         content: 'Daily challenge tasks and progress...',
         createdAt: DateTime(2024, 12, 10),
-        category: '挑战笔记',
+        category: '挑战',
       ),
     ];
   }

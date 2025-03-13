@@ -23,7 +23,7 @@ class ProfileController extends GetxController {
   final RxString errorMessage = ''.obs;
 
   // 选择的头像索引
-  final RxInt selectedAvatarIndex = 0.obs;
+  final RxInt selectedAvatarIndex = 1.obs;
 
   // 今日日期
   final Rx<DateTime> today = DateTime.now().obs;
@@ -162,6 +162,7 @@ class ProfileController extends GetxController {
 
   // 导航到成就详情
   void navigateToAchievementDetail(Achievement achievement) {
+    print(achievement.iconPath);
     Get.toNamed(Routes.PROFILE_ACHIEVEMENT_DETAIL, arguments: {'achievements': achievement});
   }
 
