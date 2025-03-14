@@ -5,8 +5,25 @@ import '../../../data/repositories/question_repository.dart';
 import '../../../data/repositories/note_repository.dart';
 import '../../../data/services/quiz_service.dart';
 import '../../../routes/app_routes.dart';
+// 增加对话框类
+class ChatMessage {
+  final String content;
+  final bool isAI;
+  final bool hasHint;
 
+  ChatMessage({
+    required this.content,
+    this.isAI = false,
+    this.hasHint = false,
+  });
+}
 class QuizController extends GetxController {
+  // new message
+  final messageList = <ChatMessage>[].obs;
+  final currentScore = 0.obs;
+  final currentProgress = 0.0.obs;
+  final currentDifficulty = '基础'.obs;
+  final isLoadingAI = false.obs;
   // Dependencies
   final QuestionRepository _questionRepository = Get.find<QuestionRepository>();
   final NoteRepository _noteRepository = Get.find<NoteRepository>();
@@ -48,6 +65,11 @@ class QuizController extends GetxController {
     loadChallengeHistory();
     updateQuizStats();
     startTimer();
+    loadQuestions();
+    loadNotes();
+    loadChallengeHistory();
+    updateQuizStats();
+    startQnaSession(); // 初始化问答会话
   }
 
   // Load all questions
@@ -260,5 +282,84 @@ class QuizController extends GetxController {
     // Simulate timer decrement every second
     Future.delayed(Duration(seconds: 1), () => startTimer());
   }
+  // 问答相关属性
+  final RxString currentQnaQuestion = ''.obs;
+  final RxList<Map<String, dynamic>> qnaConversation = <Map<String, dynamic>>[].obs;
+  final List<Map<String, dynamic>> qnaQuestions = [
+    // {
+    //   'question': '如何设计一个短链接系统？',
+    //   'keywords': ['URL缩短', '哈希算法', '数据库存储', '重定向', '冲突处理'],
+    //   'level': '基础',
+    // },
+    // {
+    //   'question': '如何设计微信朋友圈的消息更新拉取？',
+    //   'keywords': ['时间线', '分页加载', '缓存', '增量更新', '长连接推送'],
+    //   'level': '进阶',
+    // },
+    // {
+    //   'question': '如何优化双十一秒杀系统的高并发性能？',
+    //   'keywords': ['分布式锁', '限流', '缓存预热', '异步处理', '数据库优化'],
+    //   'level': '高级',
+    // },
+{
+      'question': 'Redis有哪些常用的数据结构？', // 新增测试用例题目
+      'keywords': [
+        '字符串',
+        '列表',
+        '集合',
+        '有序集合',
+        '哈希',
+      ], // 标准答案关键词
+      'level': '基础',
+    },
+  ];
+
+  // 开始问答会话
+  void startQnaSession() {
+    qnaConversation.clear();
+    final randomQuestion = (qnaQuestions..shuffle()).first;
+    currentQnaQuestion.value = randomQuestion['question'];
+    qnaConversation.add({
+      'text': '我们从牛客网的模拟面试题库中为你挑选了一个问题：\n${randomQuestion['question']}\n请给出你的设计方案！',
+      'isUser': false,
+    });
+  }
+
+  // 提交问答回答
+  void submitQnaAnswer(String answer) {
+    qnaConversation.add({'text': answer, 'isUser': true});
+    final allUserAnswers = qnaConversation
+        .where((msg) => msg['isUser'] == true)
+        .map((msg) => msg['text'] as String)
+        .join(' '); // 合并所有用户回答
+
+    // 获取当前题目
+    final currentQ = qnaQuestions.firstWhere(
+          (q) => q['question'] == currentQnaQuestion.value,
+    );
+    final keywords = currentQ['keywords'] as List<String>;
+
+    // 分析回答
+    final matchedKeywords = keywords.where((kw) => answer.contains(kw)).toList();
+    final matchRate = matchedKeywords.length / keywords.length;
+
+    String feedback;
+    if (matchRate >= 0.8) {
+      feedback =
+      '非常棒！你的回答已经很全面了，包含了${matchedKeywords.join("、")}等关键点。问答结束！';
+      qnaConversation.add({'text': feedback, 'isUser': false});
+      Future.delayed(Duration(seconds: 2), () => Get.back());
+    } else if (matchRate >= 0.4) {
+      feedback =
+      '不错，你的回答提到了一些关键点（如${matchedKeywords.join("、")}），但还可以更完善。你可以考虑${keywords.where((kw) => !matchedKeywords.contains(kw)).join("或")}等方面来优化方案。';
+      qnaConversation.add({'text': feedback, 'isUser': false});
+    } else {
+      feedback =
+      '你的回答还不够充分。可以参考${keywords.take(2).join("和")}来优化方案，或者想想Redis的其他数据类型。试着补充一下吧！';
+      qnaConversation.add({'text': feedback, 'isUser': false});
+    }
+  }
+
+
 
 }

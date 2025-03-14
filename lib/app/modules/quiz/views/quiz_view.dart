@@ -41,7 +41,7 @@ class QuizView extends GetView<QuizController> {
             height: 80,
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/pixel-title.png'), // 替换为你的图片路径
+                image: AssetImage('assets/images/pixel-title.png'),
                 fit: BoxFit.contain,
               ),
             ),
@@ -101,10 +101,10 @@ class QuizView extends GetView<QuizController> {
           ),
           SizedBox(height: 16),
           PixelButton(
-            text: '历史记录',
+            text: '试炼场ProMax',
             onPressed: () {
               // View history
-              Get.toNamed(Routes.QUIZ_HISTORY);
+              Get.toNamed(Routes.QUIZ_CHALLENGE);
             },
             backgroundColor: AppTheme.primaryColor,
           ),

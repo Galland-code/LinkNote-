@@ -11,6 +11,7 @@ import '../modules/auth/views/register_view.dart';
 import '../modules/link_note/views/link_note_upload_pdf_view.dart';
 import '../modules/profile/views/achievement_detail_view.dart';
 import '../modules/quiz/bindings/quiz_binding.dart';
+import '../modules/quiz/views/quiz_qna_difficult.dart';
 import '../modules/quiz/views/quiz_challenge_select_view.dart';
 import '../modules/quiz/views/quiz_levels_view.dart';
 import '../modules/quiz/views/quiz_view.dart';
@@ -92,6 +93,10 @@ class AppPages {
         GetPage(
           name: '/levels',
           page: () => QuizLevelsView(),
+        ),
+        GetPage(
+          name: '/qna',
+          page: () => QuizQnaView(),
         ),
       ],
     ),

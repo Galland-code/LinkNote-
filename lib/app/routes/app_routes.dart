@@ -16,6 +16,7 @@ abstract class Routes {
   static const QUIZ_HISTORY = '/quiz/history';
   static const QUIZ_CHALLENGE_SELECT = '/quiz/challenge-select';
   static const QUIZ_LEVELS = '/quiz/levels';
+  static const QUIZ_CHALLENGE = '/quiz/qna';
 
   // LinkNote 子路由
   static const LINK_NOTE_EDIT = '/link-note/edit';
