@@ -11,8 +11,10 @@ class NoteRepository {
   // 从API获取所有笔记
   Future<List<Note>> getNotesFromApi() async {
     try {
-      final response = await _apiProvider.get('${AppConstants.BASE_URL}${AppConstants.REGISTER}');
+      final response = await _apiProvider.get('${AppConstants.BASE_URL}${AppConstants.NOTES}');
       if (response.statusCode == 200) {
+        print("获取笔记成功");
+        print(response.data);
         final List<dynamic> data = response.data;
         final List<Note> notes =
             data.map((item) => Note.fromJson(item)).toList();
@@ -22,6 +24,7 @@ class NoteRepository {
 
         return notes;
       } else {
+        print("获取笔记失败,没有从api获取到笔记");
         throw Exception('Failed to load notes');
       }
     } catch (e) {
@@ -62,7 +65,7 @@ class NoteRepository {
     String title,
     String content,
     String category,
-    String userId,
+    int userId,
   ) async {
     // 生成唯一ID
     final id = DateTime.now().millisecondsSinceEpoch.toString();
@@ -123,7 +126,7 @@ class NoteRepository {
     // 尝试同步到服务器
     try {
       final response = await _apiProvider.put(
-        '${AppConstants.NOTES}/${note.id}',
+        '${AppConstants.NOTE_BY_ID}/${note.id}',
         data: updatedNote.toJson(),
       );
       if (response.statusCode == 200) {

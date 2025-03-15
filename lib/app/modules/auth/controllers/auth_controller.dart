@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../routes/app_routes.dart';
@@ -23,6 +25,8 @@ class AuthController extends GetxController {
 
   // 表单key
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final Rx<UserModel?> user = Rx<UserModel?>(null);
+  Rx<UserModel?> currentUser = Rx<UserModel?>(null);
 
   @override
   void onInit() {
@@ -31,6 +35,7 @@ class AuthController extends GetxController {
     emailController = TextEditingController();
     passwordController = TextEditingController();
     confirmPasswordController = TextEditingController();
+    loadCurrentUser();
   }
 
   @override
@@ -57,6 +62,15 @@ class AuthController extends GetxController {
     isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value;
   }
 
+  // 检查是否已登陆
+  Future<void> checkLoggedInUser() async {
+    final currentUser = _userRepository.getCurrentUser();
+    if (currentUser != null) {
+      user.value = await currentUser;
+      Get.offAllNamed(Routes.QUIZ);
+    }
+  }
+
   // 表单验证
   bool validateForm() {
     return formKey.currentState?.validate() ?? false;
@@ -72,7 +86,7 @@ class AuthController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
 
-// 检查密码匹配
+      // 检查密码匹配
       if (passwordController.text != confirmPasswordController.text) {
         errorMessage.value = '两次输入的密码不一致';
         isLoading.value = false;
@@ -102,5 +116,22 @@ class AuthController extends GetxController {
     Get.toNamed(Routes.AUTH_LOGIN);
   }
 
-  void login(String text, String text2) {}
+  // 登陆
+  Future<UserModel?> login(String account, String password) async {
+    return await _userRepository.login(account, password);
+  }
+  // 注销
+  // Future<void> logout() async {
+  //   try {
+  //     await _userRepository.logout();
+  //     user.value = null;
+  //     Get.offAllNamed(Routes.AUTH_LOGIN);
+  //   } catch (e) {
+  //     errorMessage.value = '注销失败: $e';
+  //   }
+  // }
+
+  Future<void> loadCurrentUser() async {
+    currentUser.value = await _userRepository.getCurrentUser();
+  }
 }

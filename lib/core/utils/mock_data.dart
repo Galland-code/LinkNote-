@@ -63,7 +63,7 @@ class MockData {
       Note(
         id: '1',
         title: '第十七届全国大学生软件创新大赛',
-        userId: 'user123',
+        userId: 1,
         content:
             'Key points about the competition and participation requirements...',
         createdAt: DateTime(2024, 12, 5),
@@ -72,7 +72,7 @@ class MockData {
       Note(
         id: '2',
         title: '计组复习笔记',
-        userId: 'user123',
+        userId: 1,
         content: 'Computer organization and architecture review notes...',
         createdAt: DateTime(2024, 12, 1),
         category: '学习',
@@ -80,7 +80,7 @@ class MockData {
       Note(
         id: '3',
         title: 'RAG技术笔记',
-        userId: 'user123',
+        userId: 1,
         content: 'Notes on Retrieval Augmented Generation technology...',
         createdAt: DateTime(2024, 11, 28),
         category: '技术',
@@ -88,7 +88,7 @@ class MockData {
       Note(
         id: '4',
         title: '每日挑战',
-        userId: 'user123',
+        userId: 1,
         content: 'Daily challenge tasks and progress...',
         createdAt: DateTime(2024, 12, 10),
         category: '挑战',

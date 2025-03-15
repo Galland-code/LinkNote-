@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:linknote/core/extensions/context_extensions.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/auth_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../widgets/pixel_button.dart';
@@ -197,10 +198,64 @@ class LoginView extends GetView<AuthController> {
           SizedBox(height: 24),
 
           // 登录按钮
-          PixelButton(text: '登录', onPressed: _login, width: double.infinity),
+          PixelButton(
+            text: '登录',
+            onPressed: () async {
+              if (formKey.currentState?.validate() ?? false) {
+                // 获取用户输入的账号和密码
+                String account = accountController.text;
+                String password = passwordController.text;
+
+                // 构建请求的 URL
+                const String url =
+                    'http://82.157.18.189:8080/linknote/api/auth/login';
+
+                // 发送 POST 请求
+                final response = await http.post(
+                  Uri.parse(url),
+                  headers: {
+                    'Content-Type': 'application/json', // 设置请求头
+                  },
+                  body: json.encode({
+                    'username': account,
+                    'password': password,
+                  }),
+                );
+
+                // 检查响应状态
+                if (response.statusCode == 200) {
+                  // 登录成功，跳转到主页，并保存用户信息
+                  final user = json.decode(response.body);
+                  saveUser(user);
+                  Get.offAllNamed(Routes.LINK_NOTE);
+                } else {
+                  // 处理登录失败的情况
+                  // 你可以显示错误消息
+                  print('登录失败: ${response.statusCode} -  ${response.body}');
+                  Get.offAllNamed(Routes.LINK_NOTE);
+                }
+              }
+            },
+            width: double.infinity,
+          ),
         ],
       ),
     );
+  }
+
+  // 保存用户信息的方法
+  void saveUser(Map<String, dynamic> user) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userId', user['id'].toString());
+    await prefs.setString('username', user['username']);
+    await prefs.setString('email', user['email']);
+    await prefs.setString('password', user['password']); // 注意：通常不建议存储密码
+    await prefs.setString('createdAt', user['createdAt']);
+    await prefs.setInt('avatarIndex', user['avatarIndex']);
+    await prefs.setInt('level', user['level']);
+    await prefs.setInt('experiencePoints', user['experiencePoints']);
+    await prefs.setString('lastLogin', user['lastLogin']);
+    // 如果需要保存其他字段，可以继续添加
   }
 
   void _login() async {
@@ -230,10 +285,10 @@ class LoginView extends GetView<AuthController> {
         // 你可以显示错误消息
         print('登录失败: ${response.statusCode} -  ${response.body}');
         Get.offAllNamed(Routes.LINK_NOTE);
-
       }
     }
   }
+
   Widget _buildRegisterLink() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,

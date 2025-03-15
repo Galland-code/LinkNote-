@@ -16,11 +16,19 @@ import 'package:path/path.dart' as path;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import '../../../data/models/pdf_document.dart';
+import 'package:hive/hive.dart';
+import '../../../data/models/user_model.dart'; // 确保路径正确
+import 'package:shared_preferences/shared_preferences.dart'; // 确保导入 SharedPreferences
 
 class LinkNoteController extends GetxController {
   // 依赖注入
   final NoteRepository _noteRepository = Get.find<NoteRepository>();
   final UploadService _uploadService = UploadService();
+
+  // 定义 userId 变量
+  final RxInt userId = 0.obs; // 用户 ID
+  final RxString username = ''.obs; // 用户名
+  final RxString email = ''.obs; // 用户邮箱
 
   // 可观察变量
   final RxInt currentNavIndex = 0.obs;
@@ -36,26 +44,32 @@ class LinkNoteController extends GetxController {
   final RxString noteContent = ''.obs;
   final RxString noteCategory = ''.obs;
 
-  final String currentUserId = ''; // 添加 currentUserId 变量，确保它被正确赋值
-  var userId = ''.obs;
-
   final RxList<PdfDocument> pdfDocuments = <PdfDocument>[].obs;
   final RxBool isLoadingPdf = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    loadNotes();
-    loadTodoItems();
-    extractCategories();
-    loadPdfDocuments();
+    loadUserInfo().then((_) {
+      // 确保用户信息加载完成后再加载其他数据
+      loadNotes();
+      loadTodoItems();
+      extractCategories();
+      loadPdfDocuments();
+    });
   }
 
-  void setUserId(String id) {
-    userId.value = id; // 设置 userId
+  // 加载用户信息的方法
+  Future<void> loadUserInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    userId.value = int.parse(prefs.getString('userId') ?? '0');
+    username.value = prefs.getString('username') ?? '';
+    email.value = prefs.getString('email') ?? '';
+    // 如果需要加载其他字段，可以继续添加
+    print("用户信息加载完成: ID: $userId, 用户名: $username, 邮箱: $email");
   }
 
-  String getUserId() {
+  int getUserId() {
     return userId.value; // 获取 userId
   }
 
@@ -140,7 +154,7 @@ class LinkNoteController extends GetxController {
       final note = Note(
         id: id,
         title: noteTitle.value,
-        userId: currentUserId,
+        userId: userId.toInt(),
         content: noteContent.value,
         createdAt: DateTime.now(),
         category: noteCategory.value,
@@ -199,7 +213,10 @@ class LinkNoteController extends GetxController {
     }
 
     // 构建下载目录路径
-    final downloadDirectory = path.join(directory.path, 'Download'); // 设备的 Downloads 文件夹
+    final downloadDirectory = path.join(
+      directory.path,
+      'Download',
+    ); // 设备的 Downloads 文件夹
 
     // 确保下载目录存在
     final downloadDir = Directory(downloadDirectory);
@@ -279,24 +296,31 @@ class LinkNoteController extends GetxController {
   Future<void> loadPdfDocuments() async {
     try {
       isLoadingPdf.value = true;
-      
+      print('请求的 userId: ${userId.value}');
       // 使用Dio获取PDF文件列表
       final response = await dio.Dio().get(
-        '${AppConstants.BASE_URL}/files/list',
-        queryParameters: {'userId': currentUserId},
+        '${AppConstants.BASE_URL}/files/${userId.value}',
       );
       
+      print(response);
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data['data'];
-        pdfDocuments.value = data.map((item) => PdfDocument.fromJson(item)).toList();
+        print(data);
+        pdfDocuments.value =
+            data.map((item) => PdfDocument.fromJson(item)).toList();
       }
     } catch (e) {
+      print("userId为：${userId.value}");
+      if (e is dio.DioError) {
+        print('响应状态码: ${e.response?.statusCode}');
+        print('响应数据: ${e.response?.data}');
+      }
       print('加载PDF文件失败: $e');
     } finally {
       isLoadingPdf.value = false;
     }
   }
-  
+
   // 查看PDF文件
   Future<void> viewPdfDocument(PdfDocument document) async {
     try {
@@ -305,12 +329,12 @@ class LinkNoteController extends GetxController {
         Center(child: CircularProgressIndicator()),
         barrierDismissible: false,
       );
-      
+
       // 获取临时目录
       final tempDir = await getTemporaryDirectory();
       final filePath = '${tempDir.path}/${document.fileName}';
       final file = File(filePath);
-      
+
       // 检查文件是否已下载
       if (!await file.exists()) {
         // 下载文件
@@ -318,27 +342,29 @@ class LinkNoteController extends GetxController {
           '${AppConstants.BASE_URL}/files/download/${document.id}',
           options: dio.Options(responseType: dio.ResponseType.bytes),
         );
-        
+
         await file.writeAsBytes(response.data);
       }
-      
+
       // 关闭加载对话框
       Get.back();
-      
+
       // 打开PDF查看器
-      Get.to(() => PDFView(
-        filePath: filePath,
-        enableSwipe: true,
-        swipeHorizontal: true,
-        autoSpacing: true,
-        pageFling: true,
-        pageSnap: true,
-        defaultPage: 0,
-        fitPolicy: FitPolicy.BOTH,
-        onError: (error) {
-          Get.snackbar('错误', '无法加载PDF: $error');
-        },
-      ));
+      Get.to(
+        () => PDFView(
+          filePath: filePath,
+          enableSwipe: true,
+          swipeHorizontal: true,
+          autoSpacing: true,
+          pageFling: true,
+          pageSnap: true,
+          defaultPage: 0,
+          fitPolicy: FitPolicy.BOTH,
+          onError: (error) {
+            Get.snackbar('错误', '无法加载PDF: $error');
+          },
+        ),
+      );
     } catch (e) {
       Get.back(); // 关闭加载对话框
       Get.snackbar('错误', '查看PDF失败: $e');

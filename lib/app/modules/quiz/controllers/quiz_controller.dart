@@ -301,61 +301,77 @@ class QuizController extends GetxController {
     //   'keywords': ['分布式锁', '限流', '缓存预热', '异步处理', '数据库优化'],
     //   'level': '高级',
     // },
-{
-      'question': 'Redis有哪些常用的数据结构？', // 新增测试用例题目
+    {
+      'question': 'Redis有哪些常用的数据结构？',
       'keywords': [
         '字符串',
         '列表',
         '集合',
         '有序集合',
         '哈希',
-      ], // 标准答案关键词
+      ],
+      'hints': {
+        '字符串': '这是Redis最基本的数据类型，通常用来存储简单的键值对，比如缓存数据。你能想到它的用途吗？',
+        '列表': '这种数据结构适合存储有序的元素序列，比如消息队列。你知道它支持哪些操作吗？',
+        '集合': '它用于存储无序且唯一的元素，类似于数学中的集合。可以用在哪些场景？',
+        '有序集合': '它在集合基础上增加了分数排序，比如排行榜。你能举个例子吗？',
+        '哈希': '适合存储对象或键值对集合，比如用户信息。你能说明它的优势吗？',
+      },
       'level': '基础',
     },
   ];
 
+
   // 开始问答会话
   void startQnaSession() {
     qnaConversation.clear();
-    final randomQuestion = (qnaQuestions..shuffle()).first;
+    final randomQuestion = qnaQuestions.firstWhere(
+          (q) => q['question'] == 'Redis有哪些常用的数据结构？', // 为测试固定选择此题目
+      orElse: () => (qnaQuestions..shuffle()).first, // 默认随机
+    );
     currentQnaQuestion.value = randomQuestion['question'];
     qnaConversation.add({
-      'text': '我们从牛客网的模拟面试题库中为你挑选了一个问题：\n${randomQuestion['question']}\n请给出你的设计方案！',
+      'text': '我们从牛客网的模拟面试题库中为你挑选了一个问题：\n${randomQuestion['question']}\n请试着列出Redis的常用数据结构吧！',
       'isUser': false,
     });
   }
 
-  // 提交问答回答
   void submitQnaAnswer(String answer) {
     qnaConversation.add({'text': answer, 'isUser': true});
-    final allUserAnswers = qnaConversation
-        .where((msg) => msg['isUser'] == true)
-        .map((msg) => msg['text'] as String)
-        .join(' '); // 合并所有用户回答
 
-    // 获取当前题目
     final currentQ = qnaQuestions.firstWhere(
           (q) => q['question'] == currentQnaQuestion.value,
     );
     final keywords = currentQ['keywords'] as List<String>;
-
-    // 分析回答
-    final matchedKeywords = keywords.where((kw) => answer.contains(kw)).toList();
+    final hints = currentQ['hints'] as Map<String, String>;
+    final allUserAnswers = qnaConversation
+        .where((msg) => msg['isUser'] == true)
+        .map((msg) => msg['text'] as String)
+        .join(' '); // 合并所有用户回答
+    final matchedKeywords = keywords.where((kw) => allUserAnswers.contains(kw)).toList();
     final matchRate = matchedKeywords.length / keywords.length;
+    final attemptCount = qnaConversation.where((msg) => msg['isUser'] == true).length;
 
     String feedback;
     if (matchRate >= 0.8) {
       feedback =
-      '非常棒！你的回答已经很全面了，包含了${matchedKeywords.join("、")}等关键点。问答结束！';
+      '太棒了！你的回答非常全面，涵盖了${matchedKeywords.join("、")}等关键数据结构，已经没有什么遗漏了。问答结束！';
       qnaConversation.add({'text': feedback, 'isUser': false});
       Future.delayed(Duration(seconds: 2), () => Get.back());
     } else if (matchRate >= 0.4) {
+      final missingKeywords = keywords.where((kw) => !matchedKeywords.contains(kw)).toList();
       feedback =
-      '不错，你的回答提到了一些关键点（如${matchedKeywords.join("、")}），但还可以更完善。你可以考虑${keywords.where((kw) => !matchedKeywords.contains(kw)).join("或")}等方面来优化方案。';
+      '很好！你已经提到了一些重要数据结构，比如${matchedKeywords.join("、")}。不过还有${missingKeywords.length}种没提到，比如${missingKeywords.first}，${hints[missingKeywords.first]}再想想看？';
       qnaConversation.add({'text': feedback, 'isUser': false});
     } else {
-      feedback =
-      '你的回答还不够充分。可以参考${keywords.take(2).join("和")}来优化方案，或者想想Redis的其他数据类型。试着补充一下吧！';
+      final missingKeywords = keywords.where((kw) => !matchedKeywords.contains(kw)).toList();
+      if (attemptCount == 1) {
+        feedback =
+        '有点接近了！你提到了一些内容，但还不够完整。Redis有多种数据结构，比如${missingKeywords.first}，${hints[missingKeywords.first]}试着补充更多吧！';
+      } else {
+        feedback =
+        '别灰心！目前你提到的是${matchedKeywords.isEmpty ? "还不够具体" : matchedKeywords.join("、")}，Redis还有${missingKeywords.length}种数据结构没提到。比如${missingKeywords.first}，${hints[missingKeywords.first]}可以从这个方向思考哦！';
+      }
       qnaConversation.add({'text': feedback, 'isUser': false});
     }
   }

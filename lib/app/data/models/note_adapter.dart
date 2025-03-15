@@ -20,7 +20,7 @@ class NoteAdapter extends TypeAdapter<Note> {
         ? DateTime.fromMillisecondsSinceEpoch(reader.readInt()) 
         : null;
     
-    final userId = reader.readString();
+    final userId = reader.readInt();
     
     // 读取同步状态标记
     final isNewLocally = reader.readBool();
@@ -57,7 +57,7 @@ class NoteAdapter extends TypeAdapter<Note> {
       writer.writeInt(obj.updatedAt!.millisecondsSinceEpoch);
     }
     
-    writer.writeString(obj.userId);
+    writer.writeInt(obj.userId);
     
     // 写入同步状态标记
     writer.writeBool(obj.isNewLocally);

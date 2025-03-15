@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/services.dart';
+import 'package:linknote/app/data/models/user_model_adapter.dart';
+import 'package:path_provider/path_provider.dart';
 import 'app/routes/app_pages.dart';
 import 'core/theme/app_theme.dart';
 import 'app/data/models/question_adapter.dart';
@@ -16,6 +20,10 @@ import 'app/data/repositories/user_repository.dart';
 import 'app/data/repositories/task_repository.dart';
 import 'app/data/services/quiz_service.dart';
 import 'core/utils/mock_data.dart';
+import 'app/data/models/daily_task_adapter.dart';
+import 'app/data/models/user_model_adapter.dart';
+import 'app/data/models/pdf_document_adapter.dart';
+import 'app/data/models/quiz_challenge_adapter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,10 +35,12 @@ void main() async {
   ]);
 
   // 设置状态栏颜色
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.dark,
-  ));
+  SystemChrome.setSystemUIOverlayStyle(
+    SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ),
+  );
 
   // 初始化Hive
   await Hive.initFlutter();
@@ -39,10 +49,19 @@ void main() async {
   Hive.registerAdapter(QuestionAdapter());
   Hive.registerAdapter(NoteAdapter());
   Hive.registerAdapter(AchievementAdapter());
+  Hive.registerAdapter(UserModelAdapter());
+  Hive.registerAdapter(DailyTaskAdapter());
+  Hive.registerAdapter(PdfDocumentAdapter());
+  Hive.registerAdapter(QuizChallengeAdapter());
 
   // 初始化依赖注入
   await initServices();
 
+  await Hive.deleteFromDisk(); // 删除所有 Hive 数据
+  Directory appDocDir = await getApplicationDocumentsDirectory();
+  Hive.init(appDocDir.path);
+  print('Hive database path: ${appDocDir.path}/hive');
+   
   runApp(const MyApp());
 }
 
@@ -53,7 +72,6 @@ Future<void> initServices() async {
 
   // 数据库服务
   final databaseService = await Get.putAsync(() => DatabaseService().init());
-
   // 数据仓库
   Get.put(QuestionRepository());
   Get.put(NoteRepository());
@@ -115,7 +133,6 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false, // 去除调试横幅
       defaultTransition: Transition.cupertino, // 页面切换动画
-
       // 初始路由，如果有登录状态则直接进入主页，否则进入登录页
       initialRoute: AppPages.INITIAL,
       getPages: AppPages.routes,

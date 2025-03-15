@@ -5,6 +5,7 @@ import '../models/user_model.dart';
 import '../providers/api_provider.dart';
 import '../services/database_service.dart';
 import 'package:dio/dio.dart' as dio;
+import 'package:hive/hive.dart';
 
 class UserRepository {
   final ApiProvider _apiProvider = Get.find<ApiProvider>();
@@ -16,6 +17,8 @@ class UserRepository {
         '${AppConstants.BASE_URL}${AppConstants.LOGIN}',
         data: {'account': account, 'password': password},
       );
+      print("请求登陆");
+      print('Response: ${response.data}');
 
       // 保存Token
       final token = response.data['token'];
@@ -26,9 +29,18 @@ class UserRepository {
       await prefs.setString('refreshToken', refreshToken);
 
       // 返回用户信息
-      return UserModel.fromJson(response.data['user']);
+      UserModel user = UserModel.fromJson(response.data['user']);
+
+      // 保存用户信息到 Hive
+      var box = await Hive.openBox<UserModel>('users');
+      await box.put(user.id, user); // 使用用户 ID 作为键存储用户信息
+      print("获取用户信息");
+      print(user);
+
+      return user;
     } catch (e) {
-      throw e;
+      print('Error: $e');
+      rethrow;
     }
   }
 
@@ -59,15 +71,17 @@ class UserRepository {
   // 获取当前用户
   Future<UserModel?> getCurrentUser() async {
     try {
-      final response = await _apiProvider.get(
-        '${AppConstants.BASE_URL}${AppConstants.USER_INFO}',
-      );
-      return UserModel.fromJson(response.data);
+      var box = await Hive.openBox<UserModel>('users');
+      if (box.isNotEmpty) {
+        return box.get(box.keys.first); // 获取第一个用户
+      }
+      return null; // 如果没有用户信息，返回 null
     } catch (e) {
       return UserModel(
-        id: '1',
+        id: 1,
         username: '学习达人',
         email: 'user@example.com',
+        password: '123456',
         avatarIndex: 0,
         createdAt: DateTime.now().subtract(Duration(days: 30)),
         level: 5,

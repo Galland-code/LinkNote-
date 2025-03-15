@@ -5,7 +5,7 @@ class Note {
   final String category;
   final DateTime createdAt;
   final DateTime? updatedAt;
-  final String userId;
+  final int userId;
   final bool isNewLocally;      // 新增字段：标记是否为本地新建
   final bool isModifiedLocally; // 新增字段：标记是否在本地被修改
   final bool isDeletedLocally;  // 新增字段：标记是否在本地被删除
@@ -31,7 +31,7 @@ class Note {
     required String title,
     required String content,
     required String category,
-    required String userId,
+    required int userId,
   }) {
     return Note(
       id: id,

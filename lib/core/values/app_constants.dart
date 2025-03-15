@@ -18,7 +18,7 @@ class AppConstants {
 
   // 笔记相关
   static const String UPLOAD_FILE = '/files/upload';
-  static const String NOTES = '/notes';
+  static const String NOTES = '/files';
   static const String NOTE_BY_ID = '/notes/'; // 需要附加ID
   static const String NOTES_BY_CATEGORY = '/notes/category/'; // 需要附加分类名
 

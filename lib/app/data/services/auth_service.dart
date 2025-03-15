@@ -50,10 +50,7 @@ class AuthService extends GetxService {
   Future<bool> signInWithEmailAndPassword(String email, String password) async {
     try {
       isLoading.value = true;
-      await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
       return true;
     } catch (e) {
       return false;
@@ -63,7 +60,11 @@ class AuthService extends GetxService {
   }
 
   // 电子邮件密码注册
-  Future<bool> createUserWithEmailAndPassword(String email, String password, String username) async {
+  Future<bool> createUserWithEmailAndPassword(
+    String email,
+    String password,
+    String username,
+  ) async {
     try {
       isLoading.value = true;
       // 创建Firebase用户
@@ -74,10 +75,13 @@ class AuthService extends GetxService {
 
       // 创建用户模型
       UserModel user = UserModel(
-        id: result.user!.uid,
-        email: email,
         username: username,
+        email: email,
+        password: password,
         createdAt: DateTime.now(),
+        level: 1,
+        experiencePoints: 0,
+        avatarIndex: 0,
       );
 
       // 保存到数据库
@@ -86,8 +90,6 @@ class AuthService extends GetxService {
       return true;
     } catch (e) {
       return false;
-    } finally {
-      isLoading.value = false;
     }
   }
 

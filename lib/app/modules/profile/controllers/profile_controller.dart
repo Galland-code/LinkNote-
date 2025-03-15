@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/achievement.dart';
@@ -117,11 +118,13 @@ class ProfileController extends GetxController {
       selectedAvatarIndex.value = index;
       if (currentUser.value != null) {
         final updatedUser = UserModel(
-          id: currentUser.value!.id,
           username: currentUser.value!.username,
           email: currentUser.value!.email,
           avatarIndex: index,
+          password: currentUser.value!.password,
           createdAt: currentUser.value!.createdAt,
+          level: currentUser.value!.level,
+          experiencePoints: currentUser.value!.experiencePoints
         );
 
         await _userRepository.updateUser(updatedUser);
