@@ -111,7 +111,6 @@ class AppPages {
           name: '/edit',
           page: () => LinkNoteEditView(),
         ),
-        GetPage(name: '/uploadPDF', page: () => LinkNoteUploadPDFView()),
         GetPage(
           name: '/detail',
           page: () => LinkNoteDetailView(),

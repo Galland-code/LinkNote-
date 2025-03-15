@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter/cupertino.dart' as pw;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pdfWidgets;
 import 'package:uuid/uuid.dart';
@@ -18,7 +20,9 @@ import 'package:flutter_pdfview/flutter_pdfview.dart';
 import '../../../data/models/pdf_document.dart';
 import 'package:hive/hive.dart';
 import '../../../data/models/user_model.dart'; // 确保路径正确
-import 'package:shared_preferences/shared_preferences.dart'; // 确保导入 SharedPreferences
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../views/link_note_upload_pdf_view.dart'; // 确保导入 SharedPreferences
 
 class LinkNoteController extends GetxController {
   // 依赖注入
@@ -297,24 +301,50 @@ class LinkNoteController extends GetxController {
     try {
       isLoadingPdf.value = true;
       print('请求的 userId: ${userId.value}');
-      // 使用Dio获取PDF文件列表
-      final response = await dio.Dio().get(
-        '${AppConstants.BASE_URL}/files/${userId.value}',
+
+      // 使用 http.get 获取 PDF 文件列表
+      final response = await http.get(
+        Uri.parse('${AppConstants.BASE_URL}/files/${userId.value}'),
       );
-      
-      print(response);
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['data'];
-        print(data);
-        pdfDocuments.value =
-            data.map((item) => PdfDocument.fromJson(item)).toList();
+
+      print(response.body);
+
+if (response.statusCode == 200) {
+        // 打印原始字节数据和默认解码后的字符串以调试
+        print('Raw bytes: ${response.bodyBytes}');
+        print('Raw response: ${response.body}');
+
+        // 使用 UTF-8 解码字节数据
+        String decodedResponse = utf8.decode(response.bodyBytes, allowMalformed: true);
+        print('Decoded response (before processing): $decodedResponse');
+
+        // 处理重复数组
+        if (decodedResponse.contains('][')) {
+          // 截取第一个完整的 JSON 数组
+          decodedResponse = decodedResponse.substring(0, decodedResponse.indexOf(']') + 1);
+          print('检测到重复数组，已截取第一个数组: $decodedResponse');
+        } else if (!decodedResponse.startsWith('[') || !decodedResponse.endsWith(']')) {
+          throw FormatException('响应数据不是有效的 JSON 数组');
+        }
+
+        // 解析 JSON
+        final List<dynamic> jsonData = jsonDecode(decodedResponse);
+        pdfDocuments.value = jsonData.map((json) {
+          // 从嵌套的 user 对象中提取 userId
+          final userId = json['user']['id'] as int;
+          return PdfDocument.fromJson({
+            ...json,
+            'userId': userId, // 将 user.id 映射到 userId
+          });
+        }).toList();
+
+        print('成功解析 PDF 数据: ${pdfDocuments.length} 条记录');
+        
+      } else {
+        print('请求失败，状态码: ${response.statusCode}');
       }
     } catch (e) {
       print("userId为：${userId.value}");
-      if (e is dio.DioError) {
-        print('响应状态码: ${e.response?.statusCode}');
-        print('响应数据: ${e.response?.data}');
-      }
       print('加载PDF文件失败: $e');
     } finally {
       isLoadingPdf.value = false;
@@ -322,52 +352,35 @@ class LinkNoteController extends GetxController {
   }
 
   // 查看PDF文件
-  Future<void> viewPdfDocument(PdfDocument document) async {
+  Future<void> viewPdfDocument(PdfDocument doc) async {
     try {
-      // 显示加载指示器
+      // 显示加载提示
       Get.dialog(
         Center(child: CircularProgressIndicator()),
         barrierDismissible: false,
       );
 
-      // 获取临时目录
-      final tempDir = await getTemporaryDirectory();
-      final filePath = '${tempDir.path}/${document.fileName}';
-      final file = File(filePath);
+      // 从服务器下载 PDF 文件
+      final response = await http.get(Uri.parse(doc.filePath));
 
-      // 检查文件是否已下载
-      if (!await file.exists()) {
-        // 下载文件
-        final response = await dio.Dio().get(
-          '${AppConstants.BASE_URL}/files/download/${document.id}',
-          options: dio.Options(responseType: dio.ResponseType.bytes),
-        );
+      if (response.statusCode == 200) {
+        // 获取临时目录并保存 PDF 文件
+        final tempDir = await getTemporaryDirectory();
+        final file = File('${tempDir.path}/${doc.fileName}');
+        await file.writeAsBytes(response.bodyBytes);
 
-        await file.writeAsBytes(response.data);
+        // 关闭加载提示
+        Get.back();
+
+        // 导航到 PDF 预览页面
+        Get.to(() => PdfPreviewView(filePath: file.path, fileName: doc.fileName));
+      } else {
+        Get.back();
+        Get.snackbar('错误', '无法加载 PDF 文件: HTTP ${response.statusCode}');
       }
-
-      // 关闭加载对话框
-      Get.back();
-
-      // 打开PDF查看器
-      Get.to(
-        () => PDFView(
-          filePath: filePath,
-          enableSwipe: true,
-          swipeHorizontal: true,
-          autoSpacing: true,
-          pageFling: true,
-          pageSnap: true,
-          defaultPage: 0,
-          fitPolicy: FitPolicy.BOTH,
-          onError: (error) {
-            Get.snackbar('错误', '无法加载PDF: $error');
-          },
-        ),
-      );
     } catch (e) {
-      Get.back(); // 关闭加载对话框
-      Get.snackbar('错误', '查看PDF失败: $e');
+      Get.back();
+      Get.snackbar('错误', '加载 PDF 文件失败: $e');
     }
   }
 }

@@ -72,7 +72,7 @@ class LinkNoteView extends GetView<LinkNoteController> {
             ),
           ),
           Positioned(
-            // 使用 Positioned 来放置 FloatingActionButton
+            // 使用 Positioned 来放置
             right: 20, // 右侧对齐
             child: FloatingActionButton(
               onPressed:
@@ -92,15 +92,19 @@ class LinkNoteView extends GetView<LinkNoteController> {
 
   Widget _buildNoteBooksSection() {
     return Obx(() {
-      // 如果数据正在加载，显示加载指示器
-      if (controller.isLoading.value) {
+      // 如果笔记或 PDF 数据正在加载，显示加载指示器
+      if (controller.isLoading.value || controller.isLoadingPdf.value) {
         return Center(child: CircularProgressIndicator());
       }
 
-      // 获取去重后的标签，从 controller.notes 获取
+      // 获取去重后的分类，从 controller.notes 和 controller.pdfDocuments 获取
       Set<String> uniqueCategories = {};
       for (var note in controller.notes) {
         uniqueCategories.add(note.category);
+      }
+      for (var pdf in controller.pdfDocuments) {
+        // 如果 category 为 null，则使用默认值“未分类”
+        uniqueCategories.add(pdf.category ?? '未分类');
       }
 
       return Padding(
@@ -110,7 +114,7 @@ class LinkNoteView extends GetView<LinkNoteController> {
           children: [
             Padding(
               padding: EdgeInsets.only(left: 8, bottom: 8),
-              child: Text('笔记分类', style: AppTheme.subtitleStyle),
+              child: Text('笔记与 PDF 分类', style: AppTheme.subtitleStyle),
             ),
             // 使用 SingleChildScrollView 和 Row 来实现横向滚动
             SingleChildScrollView(
@@ -123,7 +127,7 @@ class LinkNoteView extends GetView<LinkNoteController> {
                       padding: EdgeInsets.only(right: 12),
                       child: GestureDetector(
                         onTap: () {
-                          // 点击标签时跳转到该标签的笔记列表页面
+                          // 点击标签时跳转到该标签的笔记与 PDF 列表页面
                           Get.toNamed(
                             Routes.LINK_NOTE_NOTES_BY_CATEGORY,
                             arguments: category,
@@ -143,7 +147,7 @@ class LinkNoteView extends GetView<LinkNoteController> {
                     );
                   }).toList(),
                   Padding(
-                    padding: EdgeInsets.only(right: 12), // "新建" 按钮与其他标签之间的间距
+                    padding: EdgeInsets.only(right: 12),
                     child: PixelCard(
                       padding: EdgeInsets.all(12),
                       child: GestureDetector(
@@ -172,7 +176,6 @@ class LinkNoteView extends GetView<LinkNoteController> {
       );
     });
   }
-
   void _showCreateOrUploadDialog(BuildContext context) {
     // 弹出选择新建笔记或上传 PDF 的对话框
     showDialog(
@@ -435,94 +438,107 @@ class LinkNoteView extends GetView<LinkNoteController> {
         );
       }
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('PDF 文档', style: AppTheme.subtitleStyle),
-                TextButton(
-                  onPressed: () => controller.loadPdfDocuments(),
-                  child: Text('刷新'),
-                ),
-              ],
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(left: 8, bottom: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('PDF 文档', style: AppTheme.subtitleStyle),
+                  TextButton(
+                    onPressed: () => controller.loadPdfDocuments(),
+                    child: Text('刷新'),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Container(
-            height: 180,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              itemCount: controller.pdfDocuments.length,
-              itemBuilder: (context, index) {
-                final doc = controller.pdfDocuments[index];
-                return GestureDetector(
-                  onTap: () => controller.viewPdfDocument(doc),
-                  child: Container(
-                    width: 140,
-                    margin: EdgeInsets.only(right: 16),
-                    child: PixelCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            height: 80,
-                            width: double.infinity,
-                            color: Colors.red.shade100,
-                            child: Center(
-                              child: Icon(
-                                Icons.picture_as_pdf,
-                                color: Colors.red,
-                                size: 40,
+            ...controller.pdfDocuments.map(
+                  (doc) => GestureDetector(
+                onTap: () => controller.viewPdfDocument(doc),
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: PixelCard(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                doc.fileName,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.all(8),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  doc.fileName,
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                  maxLines: 2,
+                            Text(
+                              DateFormat('MM月dd日').format(doc.uploadTime),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppTheme.secondaryColor.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: AppTheme.secondaryColor,
+                                ),
+                              ),
+                              child: Text(
+                                doc.category ?? '未分类',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppTheme.secondaryColor,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.only(left: 8),
+                                child: Text(
+                                  doc.filePath.split('/').last,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[700],
+                                  ),
+                                  maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                SizedBox(height: 4),
-                                Text(
-                                  doc.category ?? '未分类',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                Text(
-                                  '${doc.uploadTime.year}/${doc.uploadTime.month}/${doc.uploadTime.day}',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                );
-              },
-            ),
-          ),
-        ],
+                ),
+              ),
+            ).toList(),
+          ],
+        ),
       );
     });
-  }
-
-  Widget _buildBottomNavBar() {
+  }  Widget _buildBottomNavBar() {
     return Obx(
       () => BottomNavBar(
         currentIndex: controller.currentNavIndex.value,
