@@ -119,6 +119,10 @@ class AppPages {
           name: '/category',
           page: () => LinkNoteCategoryView(),
         ),
+        GetPage(
+          name: '/uploadPDF',
+          page: () => LinkNoteUploadPDFView(),
+        ),
         GetPage(name: '/notes_by_category', page: () => const NotesByCategoryView()),
 
       ],

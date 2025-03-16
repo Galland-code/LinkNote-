@@ -1,32 +1,33 @@
 import 'dart:io';
 import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart' hide FormData;
+import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 
 class UploadService {
   final dio.Dio _dio = dio.Dio();
 
   // 上传 PDF 文件的函数
-  Future<void> uploadPDF(File file, String userId) async {
+  Future<void> uploadPDF(File file, int userId) async {
     try {
-      // 使用 dio 的 FormData
-      dio.FormData formData = dio.FormData.fromMap({
-        'file': await dio.MultipartFile.fromFile(file.path),  // 上传的文件
-        'userid': userId,  // 用户 ID
-      });
-
-      // 发送 POST 请求到文件上传接口
-      final response = await _dio.post(
-        'http://82.157.18.189:8080/linknote/api/files/upload',
-        data: formData,
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('http://82.157.18.189:8080/linknote/api/files/upload'),
       );
 
-      // 检查响应结果
+      request.files.add(await http.MultipartFile.fromPath('file', file.path));
+      request.fields['userid'] = userId.toString(); // 将用户 ID 添加到请求字段
+
+      // 发送请求
+      var response = await request.send();
+
+      // 处理响应
       if (response.statusCode == 200) {
         print("文件上传成功");
-        // 处理上传成功后的逻辑
       } else {
-        print("文件上传失败：${response.statusMessage}");
-        // 处理上传失败的逻辑
+        final responseBody = await response.stream.bytesToString(); // 获取响应体
+        print('响应: ${response.statusCode} - $responseBody');
+        throw Exception('文件上传失败，状态码: ${response.statusCode}');
       }
     } catch (e) {
       print("文件上传失败，错误信息：$e");

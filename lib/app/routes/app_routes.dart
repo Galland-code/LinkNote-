@@ -23,7 +23,7 @@ abstract class Routes {
   static const LINK_NOTE_EDIT = '/link-note/edit';
   static const LINK_NOTE_DETAIL = '/link-note/detail';
   static const LINK_NOTE_CATEGORY = '/link-note/category';
-  static const LINK_NOTE_UPLOAD_PDF = '/link-note/uploadPDF'; // 上传 PDF 页面
+  static const LINK_NOTE_UPLOAD_PDF = '/link-note/uploadPDF';
   static const LINK_NOTE_NOTES_BY_CATEGORY = '/link-note/notes_by_category';
 
   // QuestionBank 子路由

@@ -22,7 +22,7 @@ import 'package:hive/hive.dart';
 import '../../../data/models/user_model.dart'; // 确保路径正确
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../views/link_note_upload_pdf_view.dart'; // 确保导入 SharedPreferences
+import '../views/link_note_pdfPreview.dart'; // 确保导入 SharedPreferences
 
 class LinkNoteController extends GetxController {
   // 依赖注入
@@ -195,7 +195,7 @@ class LinkNoteController extends GetxController {
   }
 
   // 上传 PDF 文件的函数
-  Future<void> uploadPDF(File file, String userId) async {
+  Future<void> uploadPDF(File file, int userId) async {
     try {
       await _uploadService.uploadPDF(file, userId);
       Get.snackbar('上传成功', 'PDF 文件上传成功！');

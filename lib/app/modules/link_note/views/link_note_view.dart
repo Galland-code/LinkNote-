@@ -176,7 +176,7 @@ class LinkNoteView extends GetView<LinkNoteController> {
       );
     });
   }
-  void _showCreateOrUploadDialog(BuildContext context) {
+  void  _showCreateOrUploadDialog(BuildContext context) {
     // 弹出选择新建笔记或上传 PDF 的对话框
     showDialog(
       context: context,
