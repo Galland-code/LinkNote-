@@ -16,72 +16,76 @@ class QuizRepository {
     List<QuizChallenge> challenges = [];
 
     // 示例挑战1 - 已部分完成
-    challenges.add(QuizChallenge(
-      id: '1',
-      title: '计算机组成原理挑战',
-      source: '计组复习笔记',
-      levels: [
-        QuizLevel(
-          id: '1-1',
-          name: '第一关：基础概念',
-          description: '计算机基本组成和工作原理',
-          questions: _generateMockQuestions(5, '计组复习笔记'),
-          progress: 1.0,
-          isCompleted: true,
-        ),
-        QuizLevel(
-          id: '1-2',
-          name: '第二关：CPU架构',
-          description: 'CPU结构和指令执行',
-          questions: _generateMockQuestions(5, '计组复习笔记'),
-          progress: 0.6,
-          isCompleted: false,
-        ),
-        QuizLevel(
-          id: '1-3',
-          name: '第三关：存储系统',
-          description: '内存层次和缓存机制',
-          questions: _generateMockQuestions(5, '计组复习笔记'),
-          progress: 0.0,
-          isCompleted: false,
-        ),
-      ],
-      createdAt: DateTime.now().subtract(Duration(days: 2)),
-    ));
+    challenges.add(
+      QuizChallenge(
+        id: '1',
+        title: '计算机组成原理挑战',
+        source: '计组复习笔记',
+        levels: [
+          QuizLevel(
+            id: '1-1',
+            name: '第一关：基础概念',
+            description: '计算机基本组成和工作原理',
+            questions: _generateMockQuestions(5, '计组复习笔记'),
+            progress: 1.0,
+            isCompleted: true,
+          ),
+          QuizLevel(
+            id: '1-2',
+            name: '第二关：CPU架构',
+            description: 'CPU结构和指令执行',
+            questions: _generateMockQuestions(5, '计组复习笔记'),
+            progress: 0.6,
+            isCompleted: false,
+          ),
+          QuizLevel(
+            id: '1-3',
+            name: '第三关：存储系统',
+            description: '内存层次和缓存机制',
+            questions: _generateMockQuestions(5, '计组复习笔记'),
+            progress: 0.0,
+            isCompleted: false,
+          ),
+        ],
+        createdAt: DateTime.now().subtract(Duration(days: 2)),
+      ),
+    );
 
     // 示例挑战2 - 全新
-    challenges.add(QuizChallenge(
-      id: '2',
-      title: '数据结构与算法挑战',
-      source: '算法笔记',
-      levels: [
-        QuizLevel(
-          id: '2-1',
-          name: '第一关：线性结构',
-          description: '数组、链表、栈和队列',
-          questions: _generateMockQuestions(5, '算法笔记'),
-          progress: 0.0,
-          isCompleted: false,
-        ),
-        QuizLevel(
-          id: '2-2',
-          name: '第二关：树结构',
-          description: '二叉树、平衡树和堆',
-          questions: _generateMockQuestions(5, '算法笔记'),
-          progress: 0.0,
-          isCompleted: false,
-        ),
-        QuizLevel(
-          id: '2-3',
-          name: '第三关：图算法',
-          description: '图的表示和遍历算法',
-          questions: _generateMockQuestions(5, '算法笔记'),
-          progress: 0.0,
-          isCompleted: false,
-        ),
-      ],
-      createdAt: DateTime.now().subtract(Duration(days: 5)),
-    ));
+    challenges.add(
+      QuizChallenge(
+        id: '2',
+        title: '数据结构与算法挑战',
+        source: '算法笔记',
+        levels: [
+          QuizLevel(
+            id: '2-1',
+            name: '第一关：线性结构',
+            description: '数组、链表、栈和队列',
+            questions: _generateMockQuestions(5, '算法笔记'),
+            progress: 0.0,
+            isCompleted: false,
+          ),
+          QuizLevel(
+            id: '2-2',
+            name: '第二关：树结构',
+            description: '二叉树、平衡树和堆',
+            questions: _generateMockQuestions(5, '算法笔记'),
+            progress: 0.0,
+            isCompleted: false,
+          ),
+          QuizLevel(
+            id: '2-3',
+            name: '第三关：图算法',
+            description: '图的表示和遍历算法',
+            questions: _generateMockQuestions(5, '算法笔记'),
+            progress: 0.0,
+            isCompleted: false,
+          ),
+        ],
+        createdAt: DateTime.now().subtract(Duration(days: 5)),
+      ),
+    );
 
     return challenges;
   }
@@ -185,34 +189,49 @@ class QuizRepository {
           id: uuid.v4(),
           content: '计算机存储的最小单位是什么？',
           options: ['字节(Byte)', '位(Bit)', '字(Word)', '千字节(KB)'],
-          correctOptionIndex: 1,
+          correctOptionIndex: 'D',
           source: source,
+          type: '选择题',
+          difficulty: '简单',
+          sourceId: 1,
+          wrongAnswer: '错误答案示例',
+          category: '计算机组成原理',
         ),
         Question(
           id: uuid.v4(),
           content: 'CPU的主要组成部分有哪些？',
           options: ['控制器、运算器、存储器', '控制器、运算器', '控制器、运算器、寄存器', '运算器、寄存器、缓存'],
-          correctOptionIndex: 1,
+          correctOptionIndex: 'C',
           source: source,
+          type: '选择题',
+          difficulty: '简单',
+          sourceId: 1,
+          wrongAnswer: '错误答案示例',
+          category: '计算机组成原理',
         ),
         Question(
           id: uuid.v4(),
           content: '以下哪种存储器速度最快？',
           options: ['硬盘', '内存', '缓存', '寄存器'],
-          correctOptionIndex: 3,
+          correctOptionIndex: 'B',
           source: source,
+          type: '选择题',
+          difficulty: '简单',
+          sourceId: 1,
+          wrongAnswer: '错误答案示例',
+          category: '计算机组成原理',
         ),
         Question(
           id: uuid.v4(),
           content: '什么是流水线技术？',
-          options: [
-            '一种网络传输技术',
-            '一种让CPU能够并行执行多条指令的技术',
-            '一种数据压缩技术',
-            '一种文件系统'
-          ],
-          correctOptionIndex: 1,
+          options: ['一种网络传输技术', '一种让CPU能够并行执行多条指令的技术', '一种数据压缩技术', '一种文件系统'],
+          correctOptionIndex: 'A',
           source: source,
+          type: '选择题',
+          difficulty: '简单',
+          sourceId: 1,
+          wrongAnswer: '错误答案示例',
+          category: '计算机组成原理',
         ),
         Question(
           id: uuid.v4(),
@@ -221,10 +240,15 @@ class QuizRepository {
             '精简指令集计算机和复杂指令集计算机',
             '冗余指令集计算机和紧凑指令集计算机',
             '快速指令集计算机和普通指令集计算机',
-            '实时指令集计算机和通用指令集计算机'
+            '实时指令集计算机和通用指令集计算机',
           ],
-          correctOptionIndex: 0,
+          correctOptionIndex: 'A',
           source: source,
+          type: '选择题',
+          difficulty: '简单',
+          sourceId: 1,
+          wrongAnswer: '',
+          category: '计算机组成原理',
         ),
       ];
     }
@@ -235,54 +259,82 @@ class QuizRepository {
           id: uuid.v4(),
           content: '以下哪种排序算法的平均时间复杂度是O(n log n)？',
           options: ['冒泡排序', '插入排序', '快速排序', '选择排序'],
-          correctOptionIndex: 2,
+          correctOptionIndex: 'A',
           source: source,
+          type: '选择题',
+          difficulty: '简单',
+          sourceId: 1,
+
+          wrongAnswer: '错误答案示例',
+          category: '计算机组成原理',
         ),
         Question(
           id: uuid.v4(),
           content: '二分查找算法的时间复杂度是多少？',
           options: ['O(n)', 'O(n log n)', 'O(log n)', 'O(n²)'],
-          correctOptionIndex: 2,
+          correctOptionIndex: 'A',
           source: source,
+          type: '选择题',
+          difficulty: '简单',
+          sourceId: 1,
+          wrongAnswer: '错误答案示例',
+          category: '计算机组成原理',
         ),
         Question(
           id: uuid.v4(),
           content: '以下哪种数据结构适合实现优先队列？',
           options: ['数组', '链表', '堆', '栈'],
-          correctOptionIndex: 2,
+          correctOptionIndex: 'A',
           source: source,
+          type: '选择题',
+          difficulty: '简单',
+          sourceId: 1,
+          wrongAnswer: '错误答案示例',
+          category: '计算机组成原理',
         ),
         Question(
           id: uuid.v4(),
           content: '哪种遍历二叉树的方法会先访问根节点？',
           options: ['前序遍历', '中序遍历', '后序遍历', '层序遍历'],
-          correctOptionIndex: 0,
+          correctOptionIndex: 'A',
           source: source,
+          type: '选择题',
+          difficulty: '简单',
+          sourceId: 1,
+          wrongAnswer: '错误答案示例',
+          category: '计算机组成原理',
         ),
         Question(
           id: uuid.v4(),
           content: '动态规划算法通常用于解决什么类型的问题？',
-          options: [
-            '排序问题',
-            '搜索问题',
-            '具有重叠子问题和最优子结构的问题',
-            '图着色问题'
-          ],
-          correctOptionIndex: 2,
+          options: ['排序问题', '搜索问题', '具有重叠子问题和最优子结构的问题', '图着色问题'],
+          correctOptionIndex: 'C',
           source: source,
+          type: '选择题',
+          difficulty: '简单',
+          sourceId: 1,
+          wrongAnswer: '错误答案示例',
+          category: '计算机组成原理',
         ),
       ];
     }
     // 默认问题
     else {
       for (int i = 0; i < count; i++) {
-        questions.add(Question(
-          id: uuid.v4(),
-          content: '$source 相关问题 ${i + 1}',
-          options: ['选项A', '选项B', '选项C', '选项D'],
-          correctOptionIndex: i % 4,
-          source: source,
-        ));
+        questions.add(
+          Question(
+            id: uuid.v4(),
+            content: '$source 相关问题 ${i + 1}',
+            options: ['选项A', '选项B', '选项C', '选项D'],
+            correctOptionIndex: 'C',
+            source: source,
+            type: '选择题',
+            difficulty: '简单',
+            sourceId: 1,
+          wrongAnswer: '错误答案示例',
+          category: '计算机组成原理',
+          ),
+        );
       }
     }
 
@@ -290,39 +342,42 @@ class QuizRepository {
   }
 
   // Generate questions from a specific note content
-  Future<List<Question>> getQuestionsFromNoteContent(Note note) async {
-    try {
-      // In a real app, this would be done through an API call
-      // to a backend service that processes the note content
+  // Future<List<Question>> getQuestionsFromNoteContent(Note note) async {
+  //   try {
+  //     // In a real app, this would be done through an API call
+  //     // to a backend service that processes the note content
 
-      // For now, we'll generate mock questions based on the note title
-      List<Question> mockQuestions = [];
+  //     // For now, we'll generate mock questions based on the note title
+  //     List<Question> mockQuestions = [];
 
-      // Generate 5-10 questions
-      final questionCount = 5 + (note.title.length % 6); // 5-10 questions
+  //     // Generate 5-10 questions
+  //     final questionCount = 5 + (note.title.length % 6); // 5-10 questions
 
-      for (int i = 0; i < questionCount; i++) {
-        mockQuestions.add(Question(
-          id: 'note_${note.id}_question_$i',
-          content: '关于"${note.title}"的问题 ${i + 1}',
-          options: [
-            '选项A - ${note.title.substring(0, note.title.length > 3 ? 3 : note.title.length)}',
-            '选项B - ${note.title}',
-            '选项C - ${note.category}',
-            '选项D - 以上都不对'
-          ],
-          correctOptionIndex: i % 4, // simple pattern for mock data
-          source: note.title,
-        ));
-      }
+  //     for (int i = 0; i < questionCount; i++) {
+  //       mockQuestions.add(Question(
+  //         id: 'note_${note.id}_question_$i',
+  //         content: '关于"${note.title}"的问题 ${i + 1}',
+  //         options: [
+  //           '选项A - ${note.title.substring(0, note.title.length > 3 ? 3 : note.title.length)}',
+  //           '选项B - ${note.title}',
+  //           '选项C - ${note.category}',
+  //           '选项D - 以上都不对'
+  //         ],
+  //         correctOptionIndex: 'A', // simple pattern for mock data
+  //         source: note.title,
+  //         type: '选择题',
+  //         difficulty: '简单',
+  //         sourceId: 1,
+  //       ));
+  //     }
 
-      return mockQuestions;
-    } catch (e) {
-      print('Error generating questions from note: $e');
-      // Return empty list if failed
-      return [];
-    }
-  }
+  //     return mockQuestions;
+  //   } catch (e) {
+  //     print('Error generating questions from note: $e');
+  //     // Return empty list if failed
+  //     return [];
+  //   }
+  // }
 
   // Generate questions for a category of notes
   Future<List<Question>> getQuestionsFromCategory(String category) async {
@@ -331,8 +386,12 @@ class QuizRepository {
       final allQuestions = _databaseService.getAllQuestions();
 
       // Filter questions by category/source
-      final categoryQuestions = allQuestions.where((q) =>
-          q.source.toLowerCase().contains(category.toLowerCase())).toList();
+      final categoryQuestions =
+          allQuestions
+              .where(
+                (q) => q.source.toLowerCase().contains(category.toLowerCase()),
+              )
+              .toList();
 
       // If we have enough questions from the database, use those
       if (categoryQuestions.length >= 5) {
@@ -345,18 +404,25 @@ class QuizRepository {
 
       // Add more questions to reach at least 5
       for (int i = categoryQuestions.length; i < 5; i++) {
-        mockQuestions.add(Question(
-          id: 'category_${category}_question_$i',
-          content: '关于"${category}"的问题 ${i + 1}',
-          options: [
-            '选项A - ${category}相关',
-            '选项B - ${category}理论',
-            '选项C - ${category}应用',
-            '选项D - 以上都不对'
-          ],
-          correctOptionIndex: i % 4, // simple pattern for mock data
-          source: category,
-        ));
+        mockQuestions.add(
+          Question(
+            id: 'category_${category}_question_$i',
+            content: '关于"${category}"的问题 ${i + 1}',
+            options: [
+              '选项A - ${category}相关',
+              '选项B - ${category}理论',
+              '选项C - ${category}应用',
+              '选项D - 以上都不对',
+            ],
+            correctOptionIndex: ' i % 4', // simple pattern for mock data
+            source: category,
+            type: '选择题',
+            difficulty: '简单',
+            sourceId: 1,
+          wrongAnswer: '错误答案示例',
+          category: '计算机组成原理',
+          ),
+        );
       }
 
       return mockQuestions;

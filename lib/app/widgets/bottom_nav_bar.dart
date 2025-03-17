@@ -29,7 +29,7 @@ class BottomNavBar extends StatelessWidget {
           ),
         ],
       ),
-      margin: EdgeInsets.all(30), // 外边距
+      margin: EdgeInsets.all(20), // 外边距
       padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10), // 增加内边距以增加高度
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround, // 子项均匀分布
@@ -52,8 +52,8 @@ class BottomNavBar extends StatelessWidget {
     return GestureDetector(
       onTap: () => onTap(index), // 点击时调用回调函数
       child: Container(
-        height: 60,
-        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8), // 内边距
+        height: 40,
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4), // 内边距
         decoration: BoxDecoration(
           color: isSelected ? Color(0xFFE4E9EA) : null, // 选中时的背景颜色
           borderRadius: BorderRadius.circular(20), // 圆角边框
@@ -67,7 +67,7 @@ class BottomNavBar extends StatelessWidget {
             SvgHelper.getSvgIcon(
               iconName,
               color: isSelected ? Colors.black : Colors.black54, // 图标颜色
-              width: isSelected ? 32 : 46, // 选中时图标大小为32，未选中时为40
+              width: isSelected ? 32 : 40, // 选中时图标大小为32，未选中时为40
             ),
             if (isSelected) ...[
               // 仅在选中时显示文本

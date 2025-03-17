@@ -2,11 +2,12 @@ import 'package:get/get.dart';
 import '../../../data/models/question.dart';
 import '../../../data/repositories/question_repository.dart';
 import '../../../routes/app_routes.dart';
+import '../../auth/controllers/userController.dart';
+import '../../link_note/controllers/link_note_controller.dart';
 
 class QuestionBankController extends GetxController {
   // 依赖注入
   final QuestionRepository _questionRepository = Get.find<QuestionRepository>();
-
   // 可观察变量
   final RxInt currentNavIndex = 2.obs;
   final RxList<Question> questions = <Question>[].obs;
@@ -25,7 +26,9 @@ class QuestionBankController extends GetxController {
   Future<void> loadQuestions() async {
     try {
       isLoading.value = true;
-      questions.value = await _questionRepository.getQuestions();
+      int userId = Get.find<UserController>().userId.value;
+      questions.value = await _questionRepository.getWrongQuestionsFromApi(userId);
+      print(questions);
       isLoading.value = false;
       errorMessage.value = '';
 

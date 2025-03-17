@@ -17,7 +17,7 @@ class TextStyles {
   );
 
   static const TextStyle body = TextStyle(
-    fontSize: 16,
+    fontSize: 15,
     color: AppColors.textPrimary,
     height: 1.5,
   );

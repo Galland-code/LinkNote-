@@ -15,7 +15,6 @@ class QuestionBankView extends GetView<QuestionBankController> {
       body: SafeArea(
         child: context.withGridBackground(
           // Graph paper background pattern
-
           child: Column(
             children: [
               _buildHeader(),
@@ -23,10 +22,7 @@ class QuestionBankView extends GetView<QuestionBankController> {
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildQuestionsList(),
-                      _buildAnalysisSection(),
-                    ],
+                    children: [_buildQuestionsList(), _buildAnalysisSection()],
                   ),
                 ),
               ),
@@ -46,7 +42,7 @@ class QuestionBankView extends GetView<QuestionBankController> {
         children: [
           Container(
             width: double.infinity,
-            height: 80, // 根据需要调整高度
+            height: 60, // 根据需要调整高度
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/pixel-title.png'), // 替换为你的图片路径
@@ -58,10 +54,7 @@ class QuestionBankView extends GetView<QuestionBankController> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(width: 8),
-                  Text(
-                    '错题集',
-                    style: AppTheme.titleStyle,
-                  ),
+                  Text('错题集', style: AppTheme.titleStyle),
                   SizedBox(width: 8),
                 ],
               ),
@@ -80,93 +73,106 @@ class QuestionBankView extends GetView<QuestionBankController> {
         decoration: BoxDecoration(
           color: Color(0xFFD4DEE3),
           borderRadius: BorderRadius.circular(12),
-
         ),
         // 使用嵌套容器创建内阴影效果
         child: Stack(
           children: [
-        // 顶部内阴影
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 10,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withOpacity(0.3),
-                  Colors.transparent,
-                ],
+            // 顶部内阴影
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 10,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.black.withOpacity(0.3), Colors.transparent],
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-        // 左侧内阴影
-        Positioned(
-          top: 0,
-          left: 0,
-          bottom: 0,
-          width: 6,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [
-                  Colors.black.withOpacity(0.3),
-                  Colors.transparent,
-                ],
+            // 左侧内阴影
+            Positioned(
+              top: 0,
+              left: 0,
+              bottom: 0,
+              width: 6,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [Colors.black.withOpacity(0.3), Colors.transparent],
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
 
-        // 带裁剪的内容
+            // 带裁剪的内容
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: SingleChildScrollView(
                 physics: BouncingScrollPhysics(),
                 child: Padding(
                   padding: EdgeInsets.all(8),
-                  child: Obx(() => Column(
-                    children: controller.questions.map((question) => Padding(
-                      padding: EdgeInsets.only(bottom: 12),
-                      child: PixelCard(
-                        backgroundColor: AppTheme.blueCardColor,
-                        padding: EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                SvgPicture.asset('assets/icons/coin.svg', width: 40, height: 40),
-                                SizedBox(width: 8),
-                                Text(
-                                  '来源: ${question.source}',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 24
+                  child: Obx(
+                    () => Column(
+                      children:
+                          controller.questions
+                              .map(
+                                (question) => Padding(
+                                  padding: EdgeInsets.only(bottom: 12),
+                                  child: PixelCard(
+                                    backgroundColor: AppTheme.blueCardColor,
+                                    padding: EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            SvgPicture.asset(
+                                              'assets/icons/coin.svg',
+                                              width: 40,
+                                              height: 40,
+                                            ),
+                                            SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                '来源: ${question.source}',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 20,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 8),
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    physics: BouncingScrollPhysics(),
+                                    child: Text(
+                                      'Q: ${question.content}',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                          ),
+                                      overflow: TextOverflow.fade, // 溢出渐变效果
+                                    ),
+                                  )
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ],
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Q: ${question.content}',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )).toList(),
-                  )),
+                              )
+                              .toList(),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -193,31 +199,34 @@ class QuestionBankView extends GetView<QuestionBankController> {
           SizedBox(width: 12),
           Expanded(
             flex: 2,
-            child: Obx(() => PixelCard(
-              padding: EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.bar_chart),
-                      SizedBox(width: 8),
-                      Text(
-                        '错题分析:',
-                        style: AppTheme.subtitleStyle,
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Text('1. 待复习错题数: ${controller.questions.length}'),
-                  SizedBox(height: 4),
-                  ...controller.questionCounts.entries.map((entry) => Padding(
-                    padding: EdgeInsets.only(bottom: 4),
-                    child: Text('2. "${entry.key}" 错题分析报告待查看'),
-                  )).toList(),
-                ],
+            child: Obx(
+              () => PixelCard(
+                padding: EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.bar_chart),
+                        SizedBox(width: 8),
+                        Text('错题分析:', style: AppTheme.subtitleStyle),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Text('1. 待复习错题数: ${controller.questions.length}'),
+                    SizedBox(height: 4),
+                    ...controller.questionCounts.entries
+                        .map(
+                          (entry) => Padding(
+                            padding: EdgeInsets.only(bottom: 4),
+                            child: Text('2. "${entry.key}" 错题分析报告待查看'),
+                          ),
+                        )
+                        .toList(),
+                  ],
+                ),
               ),
-            )),
+            ),
           ),
         ],
       ),
@@ -225,28 +234,29 @@ class QuestionBankView extends GetView<QuestionBankController> {
   }
 
   Widget _buildBottomNavBar() {
-    return Obx(() => BottomNavBar(
-      currentIndex: controller.currentNavIndex.value,
-      onTap: (index) {
-        controller.currentNavIndex.value = index;
+    return Obx(
+      () => BottomNavBar(
+        currentIndex: controller.currentNavIndex.value,
+        onTap: (index) {
+          controller.currentNavIndex.value = index;
 
-        // Navigate based on index
-        switch (index) {
-          case 0:
-            Get.offAllNamed(Routes.LINK_NOTE);
-            break;
-          case 1:
-            Get.offAllNamed(Routes.QUIZ);
-            break;
-          case 2:
-          // Already on question bank
-            break;
-          case 3:
-            Get.offAllNamed(Routes.ACHIEVEMENTS);
-            break;
-        }
-      },
-    ));
+          // Navigate based on index
+          switch (index) {
+            case 0:
+              Get.offAllNamed(Routes.LINK_NOTE);
+              break;
+            case 1:
+              Get.offAllNamed(Routes.QUIZ);
+              break;
+            case 2:
+              // Already on question bank
+              break;
+            case 3:
+              Get.offAllNamed(Routes.ACHIEVEMENTS);
+              break;
+          }
+        },
+      ),
+    );
   }
 }
-

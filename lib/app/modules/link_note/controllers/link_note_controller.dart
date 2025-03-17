@@ -22,6 +22,7 @@ import 'package:hive/hive.dart';
 import '../../../data/models/user_model.dart'; // 确保路径正确
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../auth/controllers/userController.dart';
 import '../views/link_note_pdfPreview.dart'; // 确保导入 SharedPreferences
 
 class LinkNoteController extends GetxController {
@@ -54,7 +55,7 @@ class LinkNoteController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadUserInfo().then((_) {
+    setUserId().then((_) {
       // 确保用户信息加载完成后再加载其他数据
       loadNotes();
       loadTodoItems();
@@ -63,18 +64,9 @@ class LinkNoteController extends GetxController {
     });
   }
 
-  // 加载用户信息的方法
-  Future<void> loadUserInfo() async {
-    final prefs = await SharedPreferences.getInstance();
-    userId.value = int.parse(prefs.getString('userId') ?? '0');
-    username.value = prefs.getString('username') ?? '';
-    email.value = prefs.getString('email') ?? '';
-    // 如果需要加载其他字段，可以继续添加
-    print("用户信息加载完成: ID: $userId, 用户名: $username, 邮箱: $email");
-  }
-
-  int getUserId() {
-    return userId.value; // 获取 userId
+  Future<void> setUserId() async {
+    this.userId.value = Get.find<UserController>().userId.value; // 设置 userId
+    return;
   }
 
   // 加载笔记
@@ -309,37 +301,44 @@ class LinkNoteController extends GetxController {
 
       print(response.body);
 
-if (response.statusCode == 200) {
+      if (response.statusCode == 200) {
         // 打印原始字节数据和默认解码后的字符串以调试
         print('Raw bytes: ${response.bodyBytes}');
         print('Raw response: ${response.body}');
 
         // 使用 UTF-8 解码字节数据
-        String decodedResponse = utf8.decode(response.bodyBytes, allowMalformed: true);
+        String decodedResponse = utf8.decode(
+          response.bodyBytes,
+          allowMalformed: true,
+        );
         print('Decoded response (before processing): $decodedResponse');
 
         // 处理重复数组
         if (decodedResponse.contains('][')) {
           // 截取第一个完整的 JSON 数组
-          decodedResponse = decodedResponse.substring(0, decodedResponse.indexOf(']') + 1);
+          decodedResponse = decodedResponse.substring(
+            0,
+            decodedResponse.indexOf(']') + 1,
+          );
           print('检测到重复数组，已截取第一个数组: $decodedResponse');
-        } else if (!decodedResponse.startsWith('[') || !decodedResponse.endsWith(']')) {
+        } else if (!decodedResponse.startsWith('[') ||
+            !decodedResponse.endsWith(']')) {
           throw FormatException('响应数据不是有效的 JSON 数组');
         }
 
         // 解析 JSON
         final List<dynamic> jsonData = jsonDecode(decodedResponse);
-        pdfDocuments.value = jsonData.map((json) {
-          // 从嵌套的 user 对象中提取 userId
-          final userId = json['user']['id'] as int;
-          return PdfDocument.fromJson({
-            ...json,
-            'userId': userId, // 将 user.id 映射到 userId
-          });
-        }).toList();
+        pdfDocuments.value =
+            jsonData.map((json) {
+              // 从嵌套的 user 对象中提取 userId
+              final userId = json['user']['id'] as int;
+              return PdfDocument.fromJson({
+                ...json,
+                'userId': userId, // 将 user.id 映射到 userId
+              });
+            }).toList();
 
         print('成功解析 PDF 数据: ${pdfDocuments.length} 条记录');
-        
       } else {
         print('请求失败，状态码: ${response.statusCode}');
       }
@@ -373,7 +372,9 @@ if (response.statusCode == 200) {
         Get.back();
 
         // 导航到 PDF 预览页面
-        Get.to(() => PdfPreviewView(filePath: file.path, fileName: doc.fileName));
+        Get.to(
+          () => PdfPreviewView(filePath: file.path, fileName: doc.fileName),
+        );
       } else {
         Get.back();
         Get.snackbar('错误', '无法加载 PDF 文件: HTTP ${response.statusCode}');

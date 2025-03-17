@@ -14,18 +14,23 @@ class QuizView extends GetView<QuizController> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
           child: context.withGridBackground(
             child: Column(
               children: [
                 _buildHeader(),
-                _buildBookImage(),
-                _buildButtons(),
+                Expanded(child: SingleChildScrollView(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+               children: [ _buildBookImage(),
+                _buildButtons(),]
+    ),
+                ),
+                ),
                 _buildBottomNavBar(),
               ],
             ),
           ),
-        ),
+
       ),
     );
   }

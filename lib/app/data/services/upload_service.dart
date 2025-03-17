@@ -16,7 +16,7 @@ class UploadService {
       );
 
       request.files.add(await http.MultipartFile.fromPath('file', file.path));
-      request.fields['userid'] = userId.toString(); // 将用户 ID 添加到请求字段
+      request.fields['userId'] = userId.toString(); // 将 userId 作为整数添加到请求字段
 
       // 发送请求
       var response = await request.send();
@@ -24,6 +24,7 @@ class UploadService {
       // 处理响应
       if (response.statusCode == 200) {
         print("文件上传成功");
+        Get.snackbar('上传成功', '文件上传成功！', snackPosition: SnackPosition.BOTTOM);
       } else {
         final responseBody = await response.stream.bytesToString(); // 获取响应体
         print('响应: ${response.statusCode} - $responseBody');
@@ -32,6 +33,7 @@ class UploadService {
     } catch (e) {
       print("文件上传失败，错误信息：$e");
       // 处理异常
+      Get.snackbar('上传失败', '文件上传失败，请重试！', snackPosition: SnackPosition.BOTTOM);
     }
   }
 }

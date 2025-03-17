@@ -11,7 +11,7 @@ class QuestionBankDetailView extends GetView<QuestionBankController> {
   Widget build(BuildContext context) {
     final String questionId = Get.arguments['id'];
     final Question question = controller.questions.firstWhere(
-          (q) => q.id == questionId,
+      (q) => q.id == questionId,
       orElse: () => throw Exception('问题未找到'),
     );
 
@@ -29,9 +29,7 @@ class QuestionBankDetailView extends GetView<QuestionBankController> {
             children: [
               _buildHeader(),
               _buildQuestionCard(question),
-              Expanded(
-                child: _buildOptions(question),
-              ),
+              Expanded(child: _buildOptions(question)),
               _buildExplanation(question),
               _buildBackButton(),
             ],
@@ -52,10 +50,7 @@ class QuestionBankDetailView extends GetView<QuestionBankController> {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.black, width: 2),
           ),
-          child: Text(
-            '问题详情',
-            style: AppTheme.titleStyle,
-          ),
+          child: Text('问题详情', style: AppTheme.titleStyle),
         ),
       ),
     );
@@ -104,8 +99,9 @@ class QuestionBankDetailView extends GetView<QuestionBankController> {
       child: SingleChildScrollView(
         child: Column(
           children: List.generate(
-            question.options.length,
-                (index) => _buildOptionItem(index, question.options[index], question),
+            question.options?.length ?? 0, // 确保安全访问
+            (index) =>
+                _buildOptionItem(index, question.options![index], question),
           ),
         ),
       ),
@@ -113,7 +109,7 @@ class QuestionBankDetailView extends GetView<QuestionBankController> {
   }
 
   Widget _buildOptionItem(int index, String option, Question question) {
-    final isCorrect = question.correctOptionIndex == index;
+    final isCorrect = question.correctOptionIndex == index.toString(); // 确保正确比较
 
     return Container(
       margin: EdgeInsets.only(bottom: 12),
@@ -149,9 +145,9 @@ class QuestionBankDetailView extends GetView<QuestionBankController> {
                 ),
               ),
             ),
-            isCorrect ?
-            Icon(Icons.check_circle, color: Colors.green) :
-            Icon(Icons.cancel_outlined, color: Colors.grey),
+            isCorrect
+                ? Icon(Icons.check_circle, color: Colors.green)
+                : Icon(Icons.cancel_outlined, color: Colors.grey),
           ],
         ),
       ),
@@ -162,7 +158,7 @@ class QuestionBankDetailView extends GetView<QuestionBankController> {
     // 实际项目中，问题应该包含解释字段
     // 这里使用模拟数据
     final String explanation =
-        '解释: ${question.options[question.correctOptionIndex]} 是正确答案，'
+        '解释: ${question.correctOptionIndex} 是正确答案，'
         '因为这是计算机科学中基础的知识点。在${question.source}中有详细讲解。';
 
     return Container(
@@ -174,19 +170,10 @@ class QuestionBankDetailView extends GetView<QuestionBankController> {
           children: [
             Text(
               '解析',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
-            Text(
-              explanation,
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.5,
-              ),
-            ),
+            Text(explanation, style: TextStyle(fontSize: 14, height: 1.5)),
           ],
         ),
       ),

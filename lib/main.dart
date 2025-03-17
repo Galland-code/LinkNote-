@@ -24,6 +24,7 @@ import 'app/data/models/daily_task_adapter.dart';
 import 'app/data/models/user_model_adapter.dart';
 import 'app/data/models/pdf_document_adapter.dart';
 import 'app/data/models/quiz_challenge_adapter.dart';
+import 'app/modules/auth/controllers/userController.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -61,7 +62,9 @@ void main() async {
   Directory appDocDir = await getApplicationDocumentsDirectory();
   Hive.init(appDocDir.path);
   print('Hive database path: ${appDocDir.path}/hive');
-   
+
+  Get.put(UserController()); // 初始化 UserController
+
   runApp(const MyApp());
 }
 
@@ -69,6 +72,7 @@ void main() async {
 Future<void> initServices() async {
   // API提供者
   Get.put(ApiProvider());
+  Get.put(UserController()); 
 
   // 数据库服务
   final databaseService = await Get.putAsync(() => DatabaseService().init());

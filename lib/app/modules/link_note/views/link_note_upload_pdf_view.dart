@@ -85,9 +85,6 @@ class _LinkNoteUploadPDFViewState extends State<LinkNoteUploadPDFView> {
     try {
       File file = File(filePath!);
       final controller = Get.find<LinkNoteController>();
-      print("上传文件的userId");
-      print(file);
-      print(userId);
       await controller.uploadPDF(file, userId!);
 
       setState(() {

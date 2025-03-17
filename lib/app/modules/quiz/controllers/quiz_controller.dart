@@ -5,6 +5,8 @@ import '../../../data/repositories/question_repository.dart';
 import '../../../data/repositories/note_repository.dart';
 import '../../../data/services/quiz_service.dart';
 import '../../../routes/app_routes.dart';
+import '../../auth/controllers/userController.dart';
+import '../../link_note/controllers/link_note_controller.dart';
 // 增加对话框类
 class ChatMessage {
   final String content;
@@ -18,7 +20,6 @@ class ChatMessage {
   });
 }
 class QuizController extends GetxController {
-  // new message
   final messageList = <ChatMessage>[].obs;
   final currentScore = 0.obs;
   final currentProgress = 0.0.obs;
@@ -75,8 +76,8 @@ class QuizController extends GetxController {
   // Load all questions
   Future<void> loadQuestions() async {
     try {
-      isLoading.value = true;
-      questions.value = await _questionRepository.getQuestions();
+      int userId = Get.find<UserController>().userId.value;      isLoading.value = true;
+      questions.value = await _questionRepository.getQuestions(userId);
       isLoading.value = false;
       errorMessage.value = '';
     } catch (e) {
@@ -175,10 +176,10 @@ class QuizController extends GetxController {
       if (selectedNoteId.value.isNotEmpty) {
         final note = notes.firstWhere((n) => n.id == selectedNoteId.value);
         challengeTitle = '${note.title} - 挑战';
-        challengeQuestions = await _questionRepository.getQuestionsFromNoteContent(note);
+        // challengeQuestions = await _questionRepository.getQuestionsFromNoteContent(note);
       } else if (selectedCategory.value.isNotEmpty) {
         challengeTitle = '${selectedCategory.value} - 分类挑战';
-        challengeQuestions = await _questionRepository.getQuestionsFromCategory(selectedCategory.value);
+        // challengeQuestions = await _questionRepository.getQuestionsFromCategory(selectedCategory.value);
       } else {
         challengeTitle = '随机挑战';
         challengeQuestions = questions.toList()..shuffle();

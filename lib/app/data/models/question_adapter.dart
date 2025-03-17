@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import '../models/question.dart';
 
@@ -16,7 +17,12 @@ class QuestionAdapter extends TypeAdapter<Question> {
       optionsLength,
       (_) => reader.readString(),
     );
-    final correctOptionIndex = reader.readInt();
+    final correctOptionIndex = reader.readString();
+    final type = reader.readString();
+    final difficulty = reader.readString();
+    final sourceId = reader.readInt();
+    final wrongAnswer = reader.readString();
+    final category = reader.readString();
 
     return Question(
       id: id,
@@ -24,6 +30,11 @@ class QuestionAdapter extends TypeAdapter<Question> {
       content: content,
       options: options,
       correctOptionIndex: correctOptionIndex,
+      type: type,
+      difficulty: difficulty,
+      sourceId: sourceId,
+      wrongAnswer: wrongAnswer,
+      category: category,
     );
   }
 
@@ -32,10 +43,15 @@ class QuestionAdapter extends TypeAdapter<Question> {
     writer.writeString(obj.id);
     writer.writeString(obj.source);
     writer.writeString(obj.content);
-    writer.writeInt(obj.options.length);
-    for (var option in obj.options) {
+    writer.writeInt(obj.options?.length ?? 0);
+    for (var option in obj.options ?? []) {
       writer.writeString(option);
     }
-    writer.writeInt(obj.correctOptionIndex);
+    writer.writeString(obj.correctOptionIndex);
+    writer.writeString(obj.type);
+    writer.writeString(obj.difficulty);
+    writer.writeInt(obj.sourceId);
+    writer.writeString(obj.wrongAnswer ?? '');
+    writer.writeString(obj.category);
   }
 }

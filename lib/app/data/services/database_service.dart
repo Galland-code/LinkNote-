@@ -26,6 +26,7 @@ class DatabaseService extends GetxService {
     return this;
   }
 
+
   // 笔记相关方法
   Future<void> saveNote(Note note) async {
     await notesBox.put(note.id, note);
@@ -88,6 +89,10 @@ class DatabaseService extends GetxService {
   }
 
   Future<void> saveQuestions(List<Question> questions) async {
+    if (!questionsBox.isOpen) {
+      questionsBox = await Hive.openBox<Question>(AppConstants.QUESTIONS_BOX); // 重新打开
+      print("Reopened questionsBox");
+    }
     final Map<String, Question> questionsMap = {};
     for (var question in questions) {
       questionsMap[question.id] = question;
@@ -96,6 +101,10 @@ class DatabaseService extends GetxService {
   }
 
   List<Question> getAllQuestions() {
+    if (!questionsBox.isOpen) {
+      print("questionsBox is closed, returning empty list");
+      return [];
+    }
     return questionsBox.values.toList();
   }
 

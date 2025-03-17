@@ -10,6 +10,7 @@ import '../../../widgets/pixel_card.dart';
 import '../../../routes/app_routes.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // 用于处理 JSON
+import '../controllers/userController.dart';
 
 class LoginView extends GetView<AuthController> {
   final TextEditingController accountController = TextEditingController();
@@ -226,7 +227,13 @@ class LoginView extends GetView<AuthController> {
                 if (response.statusCode == 200) {
                   // 登录成功，跳转到主页，并保存用户信息
                   final user = json.decode(response.body);
+                  print(user);
                   saveUser(user);
+                  print(user['id']);
+                  print("设置用户id");
+                  // 设置 userId
+                  Get.find<UserController>().setUserId(user['id']);
+
                   Get.offAllNamed(Routes.LINK_NOTE);
                 } else {
                   // 处理登录失败的情况
@@ -246,16 +253,15 @@ class LoginView extends GetView<AuthController> {
   // 保存用户信息的方法
   void saveUser(Map<String, dynamic> user) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('userId', user['id'].toString());
+    await prefs.setInt('userId', user['id']);
     await prefs.setString('username', user['username']);
     await prefs.setString('email', user['email']);
-    await prefs.setString('password', user['password']); // 注意：通常不建议存储密码
+    await prefs.setString('password', user['password']);
     await prefs.setString('createdAt', user['createdAt']);
     await prefs.setInt('avatarIndex', user['avatarIndex']);
     await prefs.setInt('level', user['level']);
     await prefs.setInt('experiencePoints', user['experiencePoints']);
     await prefs.setString('lastLogin', user['lastLogin']);
-    // 如果需要保存其他字段，可以继续添加
   }
 
   void _login() async {

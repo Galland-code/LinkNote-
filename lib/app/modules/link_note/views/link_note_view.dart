@@ -53,7 +53,7 @@ class LinkNoteView extends GetView<LinkNoteController> {
         children: [
           Container(
             width: double.infinity,
-            height: 80, // 根据需要调整高度
+            height: 70, // 根据需要调整高度
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/pixel-title.png'), // 替换为你的图片路径
@@ -137,7 +137,7 @@ class LinkNoteView extends GetView<LinkNoteController> {
                           children: [
                             SvgPicture.asset(
                               'assets/icons/notebook.svg',
-                              height: 80,
+                              height: 60,
                             ),
                             SizedBox(height: 8),
                             Text('$category', style: AppTheme.subtitleStyle),
@@ -227,8 +227,8 @@ class LinkNoteView extends GetView<LinkNoteController> {
                 children: [
                   SvgPicture.asset(
                     'assets/icons/bell.svg',
-                    width: 32,
-                    height: 32,
+                    width: 28,
+                    height: 28,
                   ),
                   SizedBox(width: 8),
                   Text('ToDo List:', style: AppTheme.subtitleStyle),

@@ -23,7 +23,7 @@ class AppConstants {
   static const String NOTES_BY_CATEGORY = '/notes/category/'; // 需要附加分类名
 
   // 问题相关
-  static const String QUESTIONS = '/wrong- answers/page';
+  static const String QUESTIONS = '/wrong-answers/page';
   static const String QUESTION_BY_ID = '/questions/'; // 需要附加ID
   static const String QUESTIONS_BY_SOURCE = '/questions/source/'; // 需要附加来源
 
