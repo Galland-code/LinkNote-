@@ -41,6 +41,9 @@ import '../modules/profile/views/achievement_detail_view.dart';
 import '../modules/profile/views/avatar_selection_view.dart';
 import '../modules/profile/views/daily_tasks_view.dart';
 
+import '../modules/ai_chat/views/ai_chat_view.dart';
+import '../modules/ai_chat/bindings/ai_chat_binding.dart';
+
 import 'app_routes.dart';
 
 class AppPages {
@@ -125,9 +128,15 @@ class AppPages {
         ),
         GetPage(name: '/notes_by_category', page: () => const NotesByCategoryView()),
 
+
       ],
     ),
-
+      GetPage(
+      name: Routes.AI_CHAT,
+      page: () => AIChatView(),
+      binding: AIChatBinding(),
+      transition: Transition.rightToLeft,
+    ),
     // QuestionBank路由
     GetPage(
       name: Routes.QUESTION_BANK,

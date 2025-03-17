@@ -26,6 +26,10 @@ abstract class Routes {
   static const LINK_NOTE_UPLOAD_PDF = '/link-note/uploadPDF';
   static const LINK_NOTE_NOTES_BY_CATEGORY = '/link-note/notes_by_category';
 
+  //ai问答 子路由
+  static const AI_CHAT = '/aiChat';
+
+
   // QuestionBank 子路由
   static const QUESTION_BANK_DETAIL = '/question-bank/detail';
   static const QUESTION_BANK_SOURCE = '/question-bank/source';

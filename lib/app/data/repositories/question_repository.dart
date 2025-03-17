@@ -58,7 +58,7 @@ print("question结束");
   Future<List<Question>> getQuestionsFromApi(int userId) async {
     try {
       final response = await _apiProvider.get(
-        '${AppConstants.BASE_URL}${AppConstants.QUESTIONS}/$userId',
+        '${AppConstants.BASE_URL}${AppConstants.CHALLENGE}/$userId/unanswered',
       );
       if (response.statusCode == 200) {
         print("access successful");

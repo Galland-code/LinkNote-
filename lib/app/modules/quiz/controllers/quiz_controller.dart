@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:get/get.dart';
+import 'package:http/http.dart';
 import '../../../data/models/question.dart';
 import '../../../data/models/note.dart';
 import '../../../data/repositories/question_repository.dart';
@@ -76,8 +79,14 @@ class QuizController extends GetxController {
   // Load all questions
   Future<void> loadQuestions() async {
     try {
-      int userId = Get.find<UserController>().userId.value;      isLoading.value = true;
-      questions.value = await _questionRepository.getQuestions(userId);
+      int userId = Get.find<UserController>().userId.value;
+      isLoading.value = true;
+      final response = await get(Uri.parse('http://82.157.18.189:8080/linknote/api/questions/$userId/unanswered'));
+      if (response.statusCode == 200) {
+        final parsedResponse = jsonDecode(response.body);
+        final List<dynamic> data = parsedResponse['data'];
+        questions.value = data.map((item) => Question.fromJson(item)).toList();
+      }
       isLoading.value = false;
       errorMessage.value = '';
     } catch (e) {
@@ -230,31 +239,101 @@ class QuizController extends GetxController {
   }
 
   // Answer current question
-  Future<void> answerQuestion(int index) async {
+  // Future<void> answerQuestion(int index) async {
+  //   if (isAnswered.value) return;
+  //
+  //   isAnswered.value = true;
+  //   selectedAnswerIndex.value = index;
+  //
+  //   final currentQuestion = questions[currentQuestionIndex.value];
+  //   final isCorrect = await _quizService.recordAnswer(currentQuestion.id, index);
+  //
+  //   updateQuizStats();
+  //
+  //   if (challengeHistory.isNotEmpty) {
+  //     final challengeIndex = challengeHistory.indexWhere((c) => c['questions'] == questions.value || (c['questionCount'] == questions.length && c['title'].contains(currentQuestion.source)));
+  //
+  //     if (challengeIndex >= 0) {
+  //       final challenge = challengeHistory[challengeIndex];
+  //       challenge['completedCount'] = currentQuestionIndex.value + 1;
+  //       challengeHistory[challengeIndex] = challenge;
+  //     }
+  //   }
+  //
+  //   await Future.delayed(Duration(seconds: 1));
+  //   nextQuestion();
+  // }
+
+  // 回答问题，判断对错
+  Future<void> answerQuestion(String userAnswer) async {
     if (isAnswered.value) return;
 
-    isAnswered.value = true;
-    selectedAnswerIndex.value = index;
-
     final currentQuestion = questions[currentQuestionIndex.value];
-    final isCorrect = await _quizService.recordAnswer(currentQuestion.id, index);
+    isAnswered.value = true;
+    try {
+      // 准备提交答案的数据
+      final submission = {
+        'questionId': currentQuestion.id,
+        'answer': userAnswer,
+      };
+      // 发送答案到后端
+      final response = await post(
+        Uri.parse('http://82.157.18.189:8080/linknote/api/questions/submit'),
+        body: submission,
+      );
 
-    updateQuizStats();
+      if (response.statusCode == 200) {
+        // 根据题型判断答案是否正确
+        bool isCorrect = false;
+        switch (currentQuestion.type) {
+          case '选择题':
+          // 选择题比较选项
+            isCorrect = userAnswer == currentQuestion.correctOptionIndex;
+            break;
 
-    if (challengeHistory.isNotEmpty) {
-      final challengeIndex = challengeHistory.indexWhere((c) => c['questions'] == questions.value || (c['questionCount'] == questions.length && c['title'].contains(currentQuestion.source)));
+          case '填空题':
+          // 填空题进行精确匹配
+            isCorrect =
+                userAnswer.trim() == currentQuestion.correctOptionIndex.trim();
+            break;
 
-      if (challengeIndex >= 0) {
-        final challenge = challengeHistory[challengeIndex];
-        challenge['completedCount'] = currentQuestionIndex.value + 1;
-        challengeHistory[challengeIndex] = challenge;
+          case '简答题':
+          // 简答题需要更复杂的评分逻辑
+          // 这里根据关键词匹配来判断
+            final keywords = currentQuestion.correctOptionIndex.split('、');
+            final matchCount = keywords
+                .where(
+                    (keyword) => userAnswer.contains(keyword)
+            )
+                .length;
+            isCorrect = matchCount / keywords.length >= 0.6; // 60%关键词匹配算正确
+            break;
+        }
+
+        // 更新统计信息
+        if (isCorrect) {
+          currentScore.value += getDifficultyScore(currentQuestion.difficulty);
+        }
+
+        // 更新进度
+        currentProgress.value =
+            (currentQuestionIndex.value + 1) / questions.length;
+
+        // 显示答案反馈
+        qnaConversation.add({
+          'text': isCorrect
+              ? '回答正确！'
+              : '回答错误。正确答案是：${currentQuestion.correctOptionIndex}',
+          'isUser': false
+        });
+
+        await Future.delayed(Duration(seconds: 2));
+        nextQuestion();
       }
+    } catch (e) {
+      errorMessage.value = '提交答案失败: $e';
     }
-
-    await Future.delayed(Duration(seconds: 1));
-    nextQuestion();
   }
-
   // Move to next question
   void nextQuestion() {
     if (currentQuestionIndex.value < questions.length - 1) {
@@ -265,7 +344,18 @@ class QuizController extends GetxController {
       Get.toNamed(Routes.QUIZ_RESULT);
     }
   }
-
+    int getDifficultyScore(String difficulty) {
+      switch(difficulty) {
+        case '简单':
+          return 1;
+        case '中等':
+          return 2;
+        case '困难':
+          return 3;
+        default:
+          return 1;
+      }
+    }
   // Start new challenge
   void startNewChallenge() {}
 

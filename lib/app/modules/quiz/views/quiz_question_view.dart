@@ -5,6 +5,7 @@ import '../controllers/quiz_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../widgets/pixel_card.dart';
 import '../../../widgets/pixel_button.dart';
+
 class QuizQuestionView extends GetView<QuizController> {
   @override
   Widget build(BuildContext context) {
@@ -157,7 +158,7 @@ class QuizQuestionView extends GetView<QuizController> {
     return GestureDetector(
       onTap: () {
         if (!controller.isAnswered.value) {
-          controller.answerQuestion(index);
+          controller.answerQuestion(question);
         }
       },
       child: Container(

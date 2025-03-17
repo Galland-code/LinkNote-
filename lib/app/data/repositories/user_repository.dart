@@ -69,27 +69,81 @@ class UserRepository {
   }
 
   // 获取当前用户
-  Future<UserModel?> getCurrentUser() async {
+Future<UserModel?> getCurrentUser() async {
+  try {
+    // 优先从 SharedPreferences 获取
+    final prefs = await SharedPreferences.getInstance();
+    
+    if (prefs.containsKey('userId')) {
+      final userId = prefs.getInt('userId');
+      final username = prefs.getString('username') ?? '';
+      final email = prefs.getString('email') ?? '';
+      final password = prefs.getString('password') ?? '';
+      final createdAt = prefs.getString('createdAt') ?? '';
+      final avatarIndex = prefs.getInt('avatarIndex') ?? 0;
+      final level = prefs.getInt('level') ?? 1;
+      final experiencePoints = prefs.getInt('experiencePoints') ?? 0;
+      final lastLogin = prefs.getString('lastLogin') ?? '';
+      
+      return UserModel(
+        id: userId!,
+        username: username,
+        email: email,
+        password: password,
+        createdAt: DateTime.tryParse(createdAt) ?? DateTime.now(),
+        avatarIndex: avatarIndex,
+        level: level,
+        experiencePoints: experiencePoints,
+        lastLogin: DateTime.tryParse(lastLogin),
+      );
+    }
+    
+    // 如果SharedPreferences中没有数据，尝试从Hive获取
     try {
       var box = await Hive.openBox<UserModel>('users');
       if (box.isNotEmpty) {
-        return box.get(box.keys.first); // 获取第一个用户
+        return box.getAt(0);
       }
-      return null; // 如果没有用户信息，返回 null
     } catch (e) {
-      return UserModel(
-        id: 1,
-        username: '学习达人',
-        email: 'user@example.com',
-        password: '123456',
-        avatarIndex: 0,
-        createdAt: DateTime.now().subtract(Duration(days: 30)),
-        level: 5,
-        experiencePoints: 475,
+      print('Error retrieving from Hive: $e');
+    }
+    
+    // 如果本地存储都没有，尝试从API获取
+    final token = prefs.getString('token');
+    if (token != null && token.isNotEmpty) {
+      final response = await _apiProvider.get(
+        '${AppConstants.BASE_URL}/user/profile',
       );
+      final user = UserModel.fromJson(response.data);
+      
+      // 保存到SharedPreferences
+      await _saveUserToSharedPreferences(user);
+      return user;
+    }
+    
+    return null;
+  } catch (e) {
+    print('Error getting current user: $e');
+    return null;
+  }
+}
+  Future<void> _saveUserToSharedPreferences(UserModel user) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (user.id != null) {
+      await prefs.setInt('userId', user.id!);
+    }
+    await prefs.setString('username', user.username);
+    await prefs.setString('email', user.email);
+    await prefs.setString('password', user.password);
+    await prefs.setString('createdAt', user.createdAt.toIso8601String());
+    await prefs.setInt('avatarIndex', user.avatarIndex ?? 0);
+    await prefs.setInt('level', user.level);
+    await prefs.setInt('experiencePoints', user.experiencePoints);
+
+    if (user.lastLogin != null) {
+      await prefs.setString('lastLogin', user.lastLogin!.toIso8601String());
     }
   }
-
   // 更新用户信息
   Future<UserModel> updateUser(UserModel user) async {
     try {

@@ -43,8 +43,7 @@ class LinkNoteView extends GetView<LinkNoteController> {
       ),
     );
   }
-
-  Widget _buildHeader() {
+Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 20), // 设置上下内边距
 
@@ -75,21 +74,20 @@ class LinkNoteView extends GetView<LinkNoteController> {
             // 使用 Positioned 来放置
             right: 20, // 右侧对齐
             child: FloatingActionButton(
-              onPressed:
-                  () => Get.toNamed(Routes.LINK_NOTE_EDIT), // 点击按钮时导航到编辑页面
+              onPressed: () => Get.toNamed(Routes.AI_CHAT), // 点击按钮时导航到AI聊天页面
               backgroundColor: AppTheme.primaryColor, // 按钮背景颜色
-              child: Icon(Icons.add, color: Colors.white), // 按钮图标
+              child: Icon(Icons.chat_bubble_outline, color: Colors.white), // 使用聊天图标
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16), // 圆角边框
                 side: BorderSide(color: Colors.black, width: 2), // 边框样式
               ),
+              tooltip: 'AI 对话', // 添加悬停提示
             ),
           ),
         ],
       ),
     );
   }
-
   Widget _buildNoteBooksSection() {
     return Obx(() {
       // 如果笔记或 PDF 数据正在加载，显示加载指示器

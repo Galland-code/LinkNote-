@@ -45,18 +45,30 @@ class Question {
 
     return Question(
       id: (questionData['id'] as int).toString(),
-      source: (documentData['fileName'] as String?) ?? 'Unknown', // 提供默认值
-      content: (questionData['content'] as String?) ?? 'Unknown', // 提供默认值
+      source: (documentData['fileName'] as String?) ?? '未知来源', // 提供默认值
+      content: (questionData['content'] as String?) ?? '无内容', // 提供默认值
       options:
       questionData['options'] != null
           ? List<String>.from(questionData['options'])
           : null, // 如果 options 为空则使用 null
       correctOptionIndex: answer,
-      type: (questionData['type'] as String?) ?? 'Unknown', // 提供默认值
-      difficulty: (questionData['difficulty'] as String?) ?? 'Unknown', // 提供默认值
+      type: _parseQuestionType(json['type']?.toString()),
+      difficulty: (questionData['difficulty'] as String?) ?? '未知难度', // 提供默认值
       sourceId: documentData['id'] as int,
       wrongAnswer: json['wrongAnswer'] as String?, // 保持为可选属性
-      category: (questionData['category'] as String?) ?? 'Unknown', // 提供默认值
+      category: (questionData['category'] as String?) ?? '未分类', // 提供默认值
     );
   }
+  // 解析题型并标准化
+  static String _parseQuestionType(String? type) {
+    const typeMapping = {
+      '填空题': '填空题',
+      '简答题': '简答题',
+      '选择题': '选择题',
+    };
+    return typeMapping[type] ?? '未知题型';
+  }
+
+  // 辅助方法：判断是否为选择题
+  bool get isChoiceQuestion => type == '选择题';
 }

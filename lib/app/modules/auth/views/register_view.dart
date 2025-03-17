@@ -39,18 +39,22 @@ class RegisterView extends GetView<AuthController> {
     return Column(
       children: [
         Container(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+          width: double.infinity,
+          height: 70, // 根据需要调整高度
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black, width: 2),
+            image: DecorationImage(
+              image: AssetImage('assets/images/pixel-title.png'),
+              fit: BoxFit.contain,
+            ),
           ),
-          child: Text(
-            'LinkNote',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.primaryColor,
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(width: 8),
+                Text('LinkNote', style: AppTheme.titleStyle,selectionColor: AppTheme.primaryColor,),
+                SizedBox(width: 8),
+              ],
             ),
           ),
         ),

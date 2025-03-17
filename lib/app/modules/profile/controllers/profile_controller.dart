@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/achievement.dart';
 import '../../../data/models/daily_task.dart';
@@ -35,23 +36,59 @@ class ProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadUserProfile();
+    loadUserProfileFromSharedPreferences();
     loadAchievements();
     loadDailyTasks();
   }
 
-  // 加载用户资料
-  Future<void> loadUserProfile() async {
+  // 从SharedPreferences加载用户资料
+  Future<void> loadUserProfileFromSharedPreferences() async {
     try {
       isLoading.value = true;
-      currentUser.value = await _userRepository.getCurrentUser();
-      if (currentUser.value != null && currentUser.value!.avatarIndex != null) {
-        selectedAvatarIndex.value = currentUser.value!.avatarIndex!;
+
+      // 从SharedPreferences获取用户信息
+      final prefs = await SharedPreferences.getInstance();
+
+      // 检查是否有保存的用户信息
+      if (prefs.containsKey('userId')) {
+        final userId = prefs.getInt('userId');
+        final username = prefs.getString('username') ?? '';
+        final email = prefs.getString('email') ?? '';
+        final password = prefs.getString('password') ?? '';
+        final createdAt = prefs.getString('createdAt') ?? '';
+        final avatarIndex = prefs.getInt('avatarIndex') ?? 0;
+        final level = prefs.getInt('level') ?? 1;
+        final experiencePoints = prefs.getInt('experiencePoints') ?? 0;
+        final lastLogin = prefs.getString('lastLogin') ?? '';
+
+        // 构建UserModel对象
+        currentUser.value = UserModel(
+          id: userId,
+          username: username,
+          email: email,
+          password: password,
+          createdAt: DateTime.tryParse(createdAt) ?? DateTime.now(),
+          avatarIndex: avatarIndex,
+          level: level,
+          experiencePoints: experiencePoints,
+          lastLogin: DateTime.tryParse(lastLogin),
+        );
+
+        // 设置选择的头像索引
+        selectedAvatarIndex.value = avatarIndex;
+      } else {
+        // 如果没有保存的用户信息，尝试从仓库获取
+        currentUser.value = await _userRepository.getCurrentUser();
+        if (currentUser.value != null && currentUser.value!.avatarIndex != null) {
+          selectedAvatarIndex.value = currentUser.value!.avatarIndex!;
+        }
       }
+
       isLoading.value = false;
     } catch (e) {
       isLoading.value = false;
       errorMessage.value = '加载用户信息失败: $e';
+      print('Error loading user profile: $e');
     }
   }
 
@@ -118,17 +155,23 @@ class ProfileController extends GetxController {
       selectedAvatarIndex.value = index;
       if (currentUser.value != null) {
         final updatedUser = UserModel(
+          id: currentUser.value!.id,
           username: currentUser.value!.username,
           email: currentUser.value!.email,
           avatarIndex: index,
           password: currentUser.value!.password,
           createdAt: currentUser.value!.createdAt,
           level: currentUser.value!.level,
-          experiencePoints: currentUser.value!.experiencePoints
+          experiencePoints: currentUser.value!.experiencePoints,
+          lastLogin: currentUser.value!.lastLogin,
         );
 
         await _userRepository.updateUser(updatedUser);
         currentUser.value = updatedUser;
+
+        // 更新SharedPreferences中的头像索引
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('avatarIndex', index);
       }
     } catch (e) {
       errorMessage.value = '保存头像选择失败: $e';
@@ -172,5 +215,43 @@ class ProfileController extends GetxController {
   // 导航到编辑资料
   void navigateToEditProfile() {
     Get.toNamed(Routes.PROFILE_EDIT);
+  }
+
+  // 更新用户经验值
+  Future<void> updateUserExperience(int additionalPoints) async {
+    try {
+      if (currentUser.value != null) {
+        final newExperiencePoints = currentUser.value!.experiencePoints + additionalPoints;
+        int newLevel = currentUser.value!.level;
+
+        // 简单的升级逻辑，每100点经验提升一级
+        if (newExperiencePoints >= (currentUser.value!.level + 1) * 100) {
+          newLevel = newExperiencePoints ~/ 100 + 1;
+        }
+
+        final updatedUser = UserModel(
+          id: currentUser.value!.id,
+          username: currentUser.value!.username,
+          email: currentUser.value!.email,
+          avatarIndex: currentUser.value!.avatarIndex,
+          password: currentUser.value!.password,
+          createdAt: currentUser.value!.createdAt,
+          level: newLevel,
+          experiencePoints: newExperiencePoints,
+          lastLogin: currentUser.value!.lastLogin,
+        );
+
+        // 更新用户信息
+        await _userRepository.updateUser(updatedUser);
+        currentUser.value = updatedUser;
+
+        // 更新SharedPreferences中的经验值和等级
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('level', newLevel);
+        await prefs.setInt('experiencePoints', newExperiencePoints);
+      }
+    } catch (e) {
+      errorMessage.value = '更新用户经验失败: $e';
+    }
   }
 }

@@ -122,50 +122,61 @@ class QuestionBankView extends GetView<QuestionBankController> {
                       children:
                           controller.questions
                               .map(
-                                (question) => Padding(
-                                  padding: EdgeInsets.only(bottom: 12),
-                                  child: PixelCard(
-                                    backgroundColor: AppTheme.blueCardColor,
-                                    padding: EdgeInsets.all(16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            SvgPicture.asset(
-                                              'assets/icons/coin.svg',
-                                              width: 40,
-                                              height: 40,
-                                            ),
-                                            SizedBox(width: 8),
-                                            Expanded(
-                                              child: Text(
-                                                '来源: ${question.source}',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 20,
-                                                ),
-                                                overflow: TextOverflow.ellipsis,
+                                (question) => GestureDetector(
+                                  onTap: () {
+                                    // 点击卡片时导航到详细视图
+                                    Get.toNamed(
+                                      Routes.QUESTION_BANK_DETAIL,
+                                      arguments: {'id': question.id},
+                                    );
+                                  },
+                                  child: Padding(
+                                    padding: EdgeInsets.only(bottom: 12),
+                                    child: PixelCard(
+                                      backgroundColor: AppTheme.blueCardColor,
+                                      padding: EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              SvgPicture.asset(
+                                                'assets/icons/coin.svg',
+                                                width: 40,
+                                                height: 40,
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 8),
-                                  SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    physics: BouncingScrollPhysics(),
-                                    child: Text(
-                                      'Q: ${question.content}',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
+                                              SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  '来源: ${question.source}',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 20,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                      overflow: TextOverflow.fade, // 溢出渐变效果
-                                    ),
-                                  )
-                                      ],
+                                          SizedBox(height: 8),
+                                          SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                            physics: BouncingScrollPhysics(),
+                                            child: Text(
+                                              'Q: ${question.content}',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16,
+                                              ),
+                                              overflow:
+                                                  TextOverflow.fade, // 溢出渐变效果
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),

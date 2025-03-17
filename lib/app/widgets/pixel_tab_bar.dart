@@ -20,9 +20,12 @@ class PixelTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 获取屏幕宽度
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Container(
       height: height,
-      width: width,
+      width: width ?? screenWidth * 0.9, 
       padding: EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.grey[200],
@@ -32,13 +35,16 @@ class PixelTabBar extends StatelessWidget {
       child: Row(
         children: List.generate(
           tabs.length,
-              (index) => Expanded(
+          (index) => Expanded(
             child: GestureDetector(
               onTap: () => onTabChanged(index),
               child: AnimatedContainer(
                 duration: Duration(milliseconds: 200),
                 decoration: BoxDecoration(
-                  color: selectedIndex == index ? AppTheme.primaryColor : Colors.transparent,
+                  color:
+                      selectedIndex == index
+                          ? AppTheme.primaryColor
+                          : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 alignment: Alignment.center,
@@ -46,7 +52,10 @@ class PixelTabBar extends StatelessWidget {
                   tabs[index],
                   style: TextStyle(
                     color: selectedIndex == index ? Colors.white : Colors.black,
-                    fontWeight: selectedIndex == index ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        selectedIndex == index
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                     fontSize: 14,
                   ),
                 ),

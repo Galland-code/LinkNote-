@@ -9,7 +9,7 @@ import '../../../widgets/pixel_button.dart';
 import '../../../widgets/pixel_card.dart';
 import '../../../routes/app_routes.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert'; // 用于处理 JSON
+import 'dart:convert';
 import '../controllers/userController.dart';
 
 class LoginView extends GetView<AuthController> {
@@ -21,6 +21,10 @@ class LoginView extends GetView<AuthController> {
 
   @override
   Widget build(BuildContext context) {
+    // Get screen size to make responsive decisions
+    final size = MediaQuery.of(context).size;
+    final isSmallScreen = size.width < 600;
+
     return Scaffold(
       body: SafeArea(
         child: context.withGridBackground(
@@ -28,18 +32,22 @@ class LoginView extends GetView<AuthController> {
           enhanced: true,
           child: Center(
             child: SingleChildScrollView(
-              padding: EdgeInsets.all(20),
+              padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
               child: Form(
                 key: formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildHeader(),
-                    SizedBox(height: 32),
-                    _buildLoginForm(),
-                    SizedBox(height: 16),
-                    _buildRegisterLink(),
-                  ],
+                child: ConstrainedBox(
+                  // Constrain max width for larger screens
+                  constraints: BoxConstraints(maxWidth: 600),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildHeader(context),
+                      SizedBox(height: isSmallScreen ? 20 : 32),
+                      _buildLoginForm(context),
+                      SizedBox(height: 16),
+                      _buildRegisterLink(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -49,63 +57,62 @@ class LoginView extends GetView<AuthController> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isSmallScreen = size.width < 600;
+
     return Column(
       children: [
-        // 应用图标
+        // App icon - responsive size
         Container(
-          width: 200,
-          height: 200,
-          // decoration: BoxDecoration(
-          //   color: Colors.white,
-          //   borderRadius: BorderRadius.circular(24),
-          //   border: Border.all(color: Colors.black, width: 3),
-          //   boxShadow: [
-          //     BoxShadow(
-          //       color: Colors.black.withOpacity(0.2),
-          //       blurRadius: 10,
-          //       offset: Offset(0, 4),
-          //     ),
-          //   ],
-          // ),
-          // padding: EdgeInsets.all(16),
+          width: isSmallScreen ? 140 : 200,
+          height: isSmallScreen ? 140 : 200,
           child: Image.asset('assets/images/app_icon.png', fit: BoxFit.contain),
         ),
-        SizedBox(height: 16),
+        SizedBox(height: isSmallScreen ? 12 : 16),
 
-        // 应用名称
+        // App name - responsive font size
         Text(
           'LinkNote',
           style: TextStyle(
-            fontSize: 40,
+            fontSize: isSmallScreen ? 32 : 40,
             fontWeight: FontWeight.bold,
             color: AppTheme.primaryColor,
           ),
         ),
-        SizedBox(height: 8),
+        SizedBox(height: isSmallScreen ? 6 : 8),
 
-        // 标语
+        // Slogan - responsive font size
         Text(
           '我玩游戏的时候都在学习！',
-          style: TextStyle(fontSize: 20, color: Colors.grey[700]),
+          style: TextStyle(
+              fontSize: isSmallScreen ? 16 : 20,
+              color: Colors.grey[700]
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildLoginForm() {
+  Widget _buildLoginForm(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isSmallScreen = size.width < 600;
+
     return PixelCard(
-      padding: EdgeInsets.all(24),
+      padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             '登录账号',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                fontSize: isSmallScreen ? 20 : 24,
+                fontWeight: FontWeight.bold
+            ),
           ),
-          SizedBox(height: 24),
+          SizedBox(height: isSmallScreen ? 16 : 24),
 
-          // 邮箱输入
+          // Account input
           TextFormField(
             controller: accountController,
             decoration: InputDecoration(
@@ -114,6 +121,10 @@ class LoginView extends GetView<AuthController> {
               prefixIcon: Icon(Icons.account_box),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding: EdgeInsets.symmetric(
+                vertical: isSmallScreen ? 12 : 16,
+                horizontal: isSmallScreen ? 12 : 16,
               ),
             ),
             keyboardType: TextInputType.emailAddress,
@@ -126,9 +137,9 @@ class LoginView extends GetView<AuthController> {
           ),
           SizedBox(height: 16),
 
-          // 密码输入
+          // Password input
           Obx(
-            () => TextFormField(
+                () => TextFormField(
               controller: passwordController,
               decoration: InputDecoration(
                 labelText: '密码',
@@ -146,6 +157,10 @@ class LoginView extends GetView<AuthController> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                contentPadding: EdgeInsets.symmetric(
+                  vertical: isSmallScreen ? 12 : 16,
+                  horizontal: isSmallScreen ? 12 : 16,
+                ),
               ),
               obscureText: !isPasswordVisible.value,
               validator: (value) {
@@ -158,13 +173,57 @@ class LoginView extends GetView<AuthController> {
           ),
           SizedBox(height: 16),
 
-          // 记住我和忘记密码
-          Row(
+          // Remember me and forgot password - make this responsive for small screens
+          isSmallScreen
+              ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Remember me
+              Obx(
+                    () => Row(
+                  children: [
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: Checkbox(
+                        value: rememberMe.value,
+                        onChanged: (value) => rememberMe.value = value ?? false,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        activeColor: AppTheme.primaryColor,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Text('记住我'),
+                  ],
+                ),
+              ),
+              SizedBox(height: 8),
+              // Forgot password
+              TextButton(
+                onPressed: () {
+                  // Navigate to forgot password page
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size(0, 0),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  alignment: Alignment.centerLeft,
+                ),
+                child: Text(
+                  '忘记密码?',
+                  style: TextStyle(color: AppTheme.primaryColor),
+                ),
+              ),
+            ],
+          )
+              : Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // 记住我
+              // Remember me
               Obx(
-                () => Row(
+                    () => Row(
                   children: [
                     SizedBox(
                       width: 24,
@@ -184,10 +243,10 @@ class LoginView extends GetView<AuthController> {
                 ),
               ),
 
-              // 忘记密码
+              // Forgot password
               TextButton(
                 onPressed: () {
-                  // 跳转到忘记密码页面，没写
+                  // Navigate to forgot password page
                 },
                 child: Text(
                   '忘记密码?',
@@ -198,48 +257,55 @@ class LoginView extends GetView<AuthController> {
           ),
           SizedBox(height: 24),
 
-          // 登录按钮
+          // Login button
           PixelButton(
             text: '登录',
             onPressed: () async {
               if (formKey.currentState?.validate() ?? false) {
-                // 获取用户输入的账号和密码
+                // Get user input
                 String account = accountController.text;
                 String password = passwordController.text;
 
-                // 构建请求的 URL
+                // Build request URL
                 const String url =
                     'http://82.157.18.189:8080/linknote/api/auth/login';
 
-                // 发送 POST 请求
-                final response = await http.post(
-                  Uri.parse(url),
-                  headers: {
-                    'Content-Type': 'application/json', // 设置请求头
-                  },
-                  body: json.encode({
-                    'username': account,
-                    'password': password,
-                  }),
-                );
+                try {
+                  // Send POST request
+                  final response = await http.post(
+                    Uri.parse(url),
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: json.encode({
+                      'username': account,
+                      'password': password,
+                    }),
+                  );
 
-                // 检查响应状态
-                if (response.statusCode == 200) {
-                  // 登录成功，跳转到主页，并保存用户信息
-                  final user = json.decode(response.body);
-                  print(user);
-                  saveUser(user);
-                  print(user['id']);
-                  print("设置用户id");
-                  // 设置 userId
-                  Get.find<UserController>().setUserId(user['id']);
+                  // Check response status
+                  if (response.statusCode == 200) {
+                    // Login successful, save user info and navigate
+                    final user = json.decode(response.body);
+                    print(user);
+                    saveUser(user);
+                    print(user['id']);
+                    print("设置用户id");
+                    // Set userId
+                    Get.find<UserController>().setUserId(user['id']);
 
-                  Get.offAllNamed(Routes.LINK_NOTE);
-                } else {
-                  // 处理登录失败的情况
-                  // 你可以显示错误消息
-                  print('登录失败: ${response.statusCode} -  ${response.body}');
-                  Get.offAllNamed(Routes.LINK_NOTE);
+                    Get.offAllNamed(Routes.LINK_NOTE);
+                  } else {
+                    // Handle login failure
+                    print('登录失败: ${response.statusCode} - ${response.body}');
+                    // For testing, still navigate to main page
+                    Get.offAllNamed(Routes.LINK_NOTE);
+                  }
+                } catch (e) {
+                  // Handle network errors
+                  print('网络错误: $e');
+                  // Show error message to user
+                  Get.snackbar('连接错误', '请检查网络连接后重试');
                 }
               }
             },
@@ -250,7 +316,7 @@ class LoginView extends GetView<AuthController> {
     );
   }
 
-  // 保存用户信息的方法
+  // Save user information method
   void saveUser(Map<String, dynamic> user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('userId', user['id']);
@@ -262,37 +328,6 @@ class LoginView extends GetView<AuthController> {
     await prefs.setInt('level', user['level']);
     await prefs.setInt('experiencePoints', user['experiencePoints']);
     await prefs.setString('lastLogin', user['lastLogin']);
-  }
-
-  void _login() async {
-    if (formKey.currentState?.validate() ?? false) {
-      // 获取用户输入的账号和密码
-      String account = accountController.text;
-      String password = passwordController.text;
-
-      // 构建请求的 URL
-      const String url = 'http://82.157.18.189:8080/linknote/api/auth/login';
-
-      // 发送 POST 请求
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json', // 设置请求头
-        },
-        body: json.encode({'username': account, 'password': password}),
-      );
-
-      // 检查响应状态
-      if (response.statusCode == 200) {
-        // 登录成功，跳转到主页
-        Get.offAllNamed(Routes.LINK_NOTE);
-      } else {
-        // 处理登录失败的情况
-        // 你可以显示错误消息
-        print('登录失败: ${response.statusCode} -  ${response.body}');
-        Get.offAllNamed(Routes.LINK_NOTE);
-      }
-    }
   }
 
   Widget _buildRegisterLink() {

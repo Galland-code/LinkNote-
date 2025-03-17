@@ -17,9 +17,7 @@ class LinkNoteEditView extends GetView<LinkNoteController> {
           child: Column(
             children: [
               _buildHeader(),
-              Expanded(
-                child: _buildEditForm(),
-              ),
+              Expanded(child: _buildEditForm()),
               _buildButtons(),
             ],
           ),
@@ -30,19 +28,27 @@ class LinkNoteEditView extends GetView<LinkNoteController> {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 20),
+      width: double.infinity,
+      height: 70, // 根据需要调整高度
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/pixel-title.png'), // 替换为你的图片路径
+          fit: BoxFit.contain,
+        ),
+      ),
       child: Center(
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black, width: 2),
-          ),
-          child: Text(
-            controller.editingNoteId.value.isEmpty ? '新建笔记' : '编辑笔记',
-            style: AppTheme.titleStyle,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(width: 8),
+            Text(
+              controller.editingNoteId.value.isEmpty ? '新建笔记' : '编辑笔记',
+              style: AppTheme.titleStyle.copyWith(
+                color: Colors.white,
+              ), // 确保文本颜色与背景对比
+            ),
+            SizedBox(width: 8),
+          ],
         ),
       ),
     );
@@ -55,10 +61,7 @@ class LinkNoteEditView extends GetView<LinkNoteController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 标题输入
-          Text(
-            '标题',
-            style: AppTheme.subtitleStyle,
-          ),
+          Text('标题', style: AppTheme.subtitleStyle),
           SizedBox(height: 8),
           PixelCard(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -69,60 +72,60 @@ class LinkNoteEditView extends GetView<LinkNoteController> {
                 border: InputBorder.none,
                 hintText: '输入笔记标题',
               ),
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
           ),
           SizedBox(height: 16),
 
           // 分类选择
-          Text(
-            '分类',
-            style: AppTheme.subtitleStyle,
-          ),
+          Text('分类', style: AppTheme.subtitleStyle),
           SizedBox(height: 8),
-          Obx(() => PixelCard(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: controller.noteCategory.value.isEmpty
-                    ? (controller.categories.isNotEmpty ? controller.categories[0] : null)
-                    : controller.noteCategory.value,
-                onChanged: (value) {
-                  if (value != null) {
-                    controller.noteCategory.value = value;
-                  }
-                },
-                isExpanded: true,
-                items: [
-                  ...controller.categories.map((category) => DropdownMenuItem<String>(
-                    value: category,
-                    child: Text(category),
-                  )).toList(),
-                  // 添加一个新建分类选项
-                  DropdownMenuItem<String>(
-                    value: '新建分类',
-                    child: Row(
-                      children: [
-                        Icon(Icons.add, size: 16),
-                        SizedBox(width: 8),
-                        Text('新建分类'),
-                      ],
+          Obx(
+            () => PixelCard(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value:
+                      controller.noteCategory.value.isEmpty
+                          ? (controller.categories.isNotEmpty
+                              ? controller.categories[0]
+                              : null)
+                          : controller.noteCategory.value,
+                  onChanged: (value) {
+                    if (value != null) {
+                      controller.noteCategory.value = value;
+                    }
+                  },
+                  isExpanded: true,
+                  items: [
+                    ...controller.categories
+                        .map(
+                          (category) => DropdownMenuItem<String>(
+                            value: category,
+                            child: Text(category),
+                          ),
+                        )
+                        .toList(),
+                    // 添加一个新建分类选项
+                    DropdownMenuItem<String>(
+                      value: '新建分类',
+                      child: Row(
+                        children: [
+                          Icon(Icons.add, size: 16),
+                          SizedBox(width: 8),
+                          Text('新建分类'),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          )),
+          ),
           SizedBox(height: 16),
 
           // 内容输入
-          Text(
-            '内容',
-            style: AppTheme.subtitleStyle,
-          ),
+          Text('内容', style: AppTheme.subtitleStyle),
           SizedBox(height: 8),
           PixelCard(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -134,9 +137,7 @@ class LinkNoteEditView extends GetView<LinkNoteController> {
                 hintText: '输入笔记内容',
               ),
               maxLines: 10,
-              style: TextStyle(
-                fontSize: 16,
-              ),
+              style: TextStyle(fontSize: 16),
             ),
           ),
         ],

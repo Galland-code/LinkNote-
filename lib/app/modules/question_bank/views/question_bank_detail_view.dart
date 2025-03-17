@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:linknote/core/extensions/context_extensions.dart';
 import '../controllers/question_bank_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../widgets/pixel_card.dart';
@@ -17,14 +19,7 @@ class QuestionBankDetailView extends GetView<QuestionBankController> {
 
     return Scaffold(
       body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppTheme.backgroundColor,
-            image: DecorationImage(
-              image: AssetImage('assets/images/grid_background.png'),
-              repeat: ImageRepeat.repeat,
-            ),
-          ),
+        child: context.withGridBackground(
           child: Column(
             children: [
               _buildHeader(),
@@ -42,16 +37,30 @@ class QuestionBankDetailView extends GetView<QuestionBankController> {
   Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 20),
-      child: Center(
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black, width: 2),
+      child: Stack(
+        alignment: Alignment.centerRight,
+        children: [
+          Container(
+            width: double.infinity,
+            height: 60,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/pixel-title.png'), // 替换为你的图片路径
+                fit: BoxFit.contain,
+              ),
+            ),
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(width: 8),
+                  Text('问题详情', style: AppTheme.titleStyle),
+                  SizedBox(width: 8),
+                ],
+              ),
+            ),
           ),
-          child: Text('问题详情', style: AppTheme.titleStyle),
-        ),
+        ],
       ),
     );
   }
@@ -67,25 +76,37 @@ class QuestionBankDetailView extends GetView<QuestionBankController> {
           children: [
             Row(
               children: [
-                Image.asset('assets/images/pencil.png', width: 24, height: 24),
+                SvgPicture.asset(
+                  'assets/icons/coin.svg',
+                  width: 24,
+                  height: 24,
+                ),
                 SizedBox(width: 8),
-                Text(
-                  '来源: ${question.source}',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    '来源: ${question.source}',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.visible,
                   ),
                 ),
               ],
             ),
             SizedBox(height: 16),
-            Text(
-              question.content,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-              ),
+            Wrap(
+              children: [
+                Text(
+                  question.content,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.visible,
+                ),
+              ],
             ),
           ],
         ),
@@ -99,7 +120,7 @@ class QuestionBankDetailView extends GetView<QuestionBankController> {
       child: SingleChildScrollView(
         child: Column(
           children: List.generate(
-            question.options?.length ?? 0, // 确保安全访问
+            question.options?.length ?? 0,
             (index) =>
                 _buildOptionItem(index, question.options![index], question),
           ),
@@ -109,7 +130,7 @@ class QuestionBankDetailView extends GetView<QuestionBankController> {
   }
 
   Widget _buildOptionItem(int index, String option, Question question) {
-    final isCorrect = question.correctOptionIndex == index.toString(); // 确保正确比较
+    final isCorrect = question.correctOptionIndex == index.toString();
 
     return Container(
       margin: EdgeInsets.only(bottom: 12),
@@ -155,8 +176,6 @@ class QuestionBankDetailView extends GetView<QuestionBankController> {
   }
 
   Widget _buildExplanation(Question question) {
-    // 实际项目中，问题应该包含解释字段
-    // 这里使用模拟数据
     final String explanation =
         '解释: ${question.correctOptionIndex} 是正确答案，'
         '因为这是计算机科学中基础的知识点。在${question.source}中有详细讲解。';

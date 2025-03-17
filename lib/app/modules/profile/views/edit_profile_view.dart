@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:linknote/core/extensions/context_extensions.dart';
 import '../../../routes/app_routes.dart';
 import '../controllers/profile_controller.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -14,14 +15,7 @@ class EditProfileView extends GetView<ProfileController> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppTheme.backgroundColor,
-            image: DecorationImage(
-              image: AssetImage('assets/images/grid_background.png'),
-              repeat: ImageRepeat.repeat,
-            ),
-          ),
+        child: context.withGridBackground(
           child: Column(
             children: [
               _buildHeader(),
