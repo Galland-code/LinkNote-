@@ -33,7 +33,7 @@ class BottomNavBar extends StatelessWidget {
     ); // 屏幕宽度的1%，限制在3-5之间
 
     // 根据屏幕宽度计算图标尺寸
-    final iconSize = (screenWidth * 0.06).clamp(
+    final iconSize = (screenWidth * 0.07).clamp(
       24.0,
       40.0,
     ); // 屏幕宽度的6%，限制在24-40之间
@@ -59,65 +59,70 @@ class BottomNavBar extends StatelessWidget {
           ),
         ],
       ),
-      margin: EdgeInsets.symmetric(
-        horizontal: horizontalMargin,
-        vertical: verticalMargin,
+      margin: EdgeInsets.only(
+        bottom: screenHeight * 0.02, // 只有下边距
+        left: screenWidth * 0.01, // 左边距
+        right: screenWidth * 0.01, // 右边距
       ),
       padding: EdgeInsets.symmetric(
-        vertical: screenHeight * 0.01, // 屏幕高度的1%
+        vertical: screenHeight * 0.006, // 屏幕高度的1%
         horizontal: screenWidth * 0.01, // 屏幕宽度的2%
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround, // 子项均匀分布
         children: [
-          Expanded( // 使用 Expanded 组件
-          child: _buildNavItem(
-            context,
-            0,
-            'notebook',
-            '笔记',
-            currentIndex == 0,
-            iconSize,
-            selectedIconSize,
-            fontSize,
+          Expanded(
+            // 使用 Expanded 组件
+            child: _buildNavItem(
+              context,
+              0,
+              'notebook',
+              '笔记',
+              currentIndex == 0,
+              iconSize,
+              selectedIconSize,
+              fontSize,
+            ),
           ),
-        ),
-        Expanded( // 使用 Expanded 组件
-          child: _buildNavItem(
-            context,
-            1,
-            'sword',
-            '闯关',
-            currentIndex == 1,
-            iconSize,
-            selectedIconSize,
-            fontSize,
+          Expanded(
+            // 使用 Expanded 组件
+            child: _buildNavItem(
+              context,
+              1,
+              'sword',
+              '闯关',
+              currentIndex == 1,
+              iconSize,
+              selectedIconSize,
+              fontSize,
+            ),
           ),
-        ),
-          Expanded( // 使用 Expanded 组件
-          child: _buildNavItem(
-            context,
-            2,
-            'document',
-            '错题',
-            currentIndex == 2,
-            iconSize,
-            selectedIconSize,
-            fontSize,
+          Expanded(
+            // 使用 Expanded 组件
+            child: _buildNavItem(
+              context,
+              2,
+              'document',
+              '错题',
+              currentIndex == 2,
+              iconSize,
+              selectedIconSize,
+              fontSize,
+            ),
           ),
-        ),
-        Expanded( // 使用 Expanded 组件
-          child: _buildNavItem(
-            context,
-            3,
-            'user',
-            '我的',
-            currentIndex == 3,
-            iconSize,
-            selectedIconSize,
-            fontSize,
+          Expanded(
+            // 使用 Expanded 组件
+            child: _buildNavItem(
+              context,
+              3,
+              'user',
+              '我的',
+              currentIndex == 3,
+              iconSize,
+              selectedIconSize,
+              fontSize,
+            ),
           ),
-        ),
         ],
       ),
     );

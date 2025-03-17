@@ -184,7 +184,7 @@ class QuizLevelsView extends GetView<QuizController> {
                   ? () {
                 controller.currentQuestionIndex.value = index;
                 controller.isAnswered.value = false;
-                controller.selectedAnswerIndex.value = -1;
+                controller.answer.value = '';
                 Get.toNamed(Routes.QUIZ_QUESTION);
               }
                   : null,
@@ -254,7 +254,7 @@ class QuizLevelsView extends GetView<QuizController> {
                 }
 
                 controller.isAnswered.value = false;
-                controller.selectedAnswerIndex.value = -1;
+                controller.answer.value = '';
                 Get.toNamed(Routes.QUIZ_QUESTION);
               },
             ),

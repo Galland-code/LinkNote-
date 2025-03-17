@@ -43,7 +43,7 @@ class QuizView extends GetView<QuizController> {
         children: [
           Container(
             width: double.infinity,
-            height: 80,
+            height: 70,
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/pixel-title.png'),

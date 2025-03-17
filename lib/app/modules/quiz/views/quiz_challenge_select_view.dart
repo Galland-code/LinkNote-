@@ -1,4 +1,3 @@
-// lib/app/modules/quiz/views/quiz_challenge_select_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:linknote/core/extensions/context_extensions.dart';
@@ -18,19 +17,21 @@ class QuizChallengeSelectView extends GetView<QuizController> {
             children: [
               _buildHeader(),
               Expanded(
-                child: Obx(() => controller.isLoading.value
-                    ? Center(child: PixelLoading())
-                    : SingleChildScrollView(
-                  padding: EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSelectionTabs(),
-                      SizedBox(height: 16),
-                      _buildSelectionContent(),
-                    ],
-                  ),
-                )
+                child: Obx(
+                  () =>
+                      controller.isLoading.value
+                          ? Center(child: PixelLoading())
+                          : SingleChildScrollView(
+                            padding: EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildSelectionTabs(),
+                                SizedBox(height: 16),
+                                _buildSelectionContent(),
+                              ],
+                            ),
+                          ),
                 ),
               ),
               _buildBottomButtons(),
@@ -86,22 +87,28 @@ class QuizChallengeSelectView extends GetView<QuizController> {
             child: GestureDetector(
               onTap: () {
                 controller.selectedCategory.value = '';
-                controller.selectedNoteId.value = '';
+                controller.selectedNoteId.value = -1;
               },
               child: Container(
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: controller.selectedCategory.isEmpty && controller.selectedNoteId.isEmpty
-                      ? AppTheme.primaryColor
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.horizontal(left: Radius.circular(10)),
+                  color:
+                      controller.selectedCategory.value.isEmpty &&
+                              controller.selectedNoteId.value == -1
+                          ? AppTheme.primaryColor
+                          : Colors.transparent,
+                  borderRadius: BorderRadius.horizontal(
+                    left: Radius.circular(10),
+                  ),
                 ),
                 child: Text(
                   '随机挑战',
                   style: TextStyle(
-                    color: controller.selectedCategory.isEmpty && controller.selectedNoteId.isEmpty
-                        ? Colors.white
-                        : Colors.black,
+                    color:
+                        controller.selectedCategory.value.isEmpty &&
+                                controller.selectedNoteId.value == -1
+                            ? Colors.white
+                            : Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -112,7 +119,7 @@ class QuizChallengeSelectView extends GetView<QuizController> {
           Expanded(
             child: GestureDetector(
               onTap: () {
-                controller.selectedNoteId.value = '';
+                controller.selectedNoteId.value = -1;
                 if (controller.categories.isNotEmpty) {
                   controller.selectedCategory.value = controller.categories[0];
                 }
@@ -120,16 +127,20 @@ class QuizChallengeSelectView extends GetView<QuizController> {
               child: Container(
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: controller.selectedCategory.isNotEmpty && controller.selectedNoteId.isEmpty
-                      ? AppTheme.primaryColor
-                      : Colors.transparent,
+                  color:
+                      controller.selectedCategory.isNotEmpty &&
+                              controller.selectedNoteId.value == -1
+                          ? AppTheme.primaryColor
+                          : Colors.transparent,
                 ),
                 child: Text(
                   '分类挑战',
                   style: TextStyle(
-                    color: controller.selectedCategory.isNotEmpty && controller.selectedNoteId.isEmpty
-                        ? Colors.white
-                        : Colors.black,
+                    color:
+                        controller.selectedCategory.isNotEmpty &&
+                                controller.selectedNoteId.value == -1
+                            ? Colors.white
+                            : Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -140,25 +151,31 @@ class QuizChallengeSelectView extends GetView<QuizController> {
           Expanded(
             child: GestureDetector(
               onTap: () {
-                if (controller.notes.isNotEmpty) {
-                  controller.selectedNoteId.value = controller.notes[0].id;
-                  controller.selectedCategory.value = controller.notes[0].category;
+                if (controller.pdfDocuments.isNotEmpty) {
+                  controller.selectedNoteId.value =
+                      controller.pdfDocuments[0].id;
+                  controller.selectedCategory.value =
+                      controller.pdfDocuments[0].category;
                 }
               },
               child: Container(
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: controller.selectedNoteId.isNotEmpty
-                      ? AppTheme.primaryColor
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.horizontal(right: Radius.circular(10)),
+                  color:
+                      controller.selectedNoteId.value != -1
+                          ? AppTheme.primaryColor
+                          : Colors.transparent,
+                  borderRadius: BorderRadius.horizontal(
+                    right: Radius.circular(10),
+                  ),
                 ),
                 child: Text(
                   '笔记挑战',
                   style: TextStyle(
-                    color: controller.selectedNoteId.isNotEmpty
-                        ? Colors.white
-                        : Colors.black,
+                    color:
+                        controller.selectedNoteId.value != -1
+                            ? Colors.white
+                            : Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -172,7 +189,8 @@ class QuizChallengeSelectView extends GetView<QuizController> {
 
   Widget _buildSelectionContent() {
     // Random challenge - no selection needed
-    if (controller.selectedCategory.isEmpty && controller.selectedNoteId.isEmpty) {
+    if (controller.selectedCategory.value.isEmpty &&
+        controller.selectedNoteId.value == -1) {
       return PixelCard(
         padding: EdgeInsets.all(20),
         child: Column(
@@ -182,28 +200,19 @@ class QuizChallengeSelectView extends GetView<QuizController> {
             SizedBox(height: 16),
             Text(
               '随机挑战',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 8),
             Text(
               '从所有笔记中随机生成问题，测试您的全面掌握程度。',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[700],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 16),
             Text(
-              '问题数量: 10',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              '问题数量: 5',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -211,27 +220,111 @@ class QuizChallengeSelectView extends GetView<QuizController> {
     }
 
     // Category selection
-    if (controller.selectedCategory.isNotEmpty && controller.selectedNoteId.isEmpty) {
+    if (controller.selectedCategory.value.isNotEmpty &&
+        controller.selectedNoteId.value == -1) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             '选择笔记分类',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 12),
-          ...controller.categories.map((category) =>
-              GestureDetector(
-                onTap: () => controller.selectCategory(category),
+          ...controller.categories
+              .map(
+                (category) => GestureDetector(
+                  onTap: () => controller.selectCategory(category),
+                  child: Container(
+                    margin: EdgeInsets.only(bottom: 12),
+                    child: PixelCard(
+                      backgroundColor:
+                          controller.selectedCategory.value == category
+                              ? AppTheme.primaryColor.withOpacity(0.2)
+                              : Colors.white,
+                      padding: EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color:
+                                  controller.selectedCategory.value == category
+                                      ? AppTheme.primaryColor
+                                      : Colors.grey[300],
+                              border: Border.all(
+                                color:
+                                    controller.selectedCategory.value ==
+                                            category
+                                        ? AppTheme.primaryColor
+                                        : Colors.grey,
+                                width: 2,
+                              ),
+                            ),
+                            child:
+                                controller.selectedCategory.value == category
+                                    ? Icon(
+                                      Icons.check,
+                                      color: Colors.white,
+                                      size: 16,
+                                    )
+                                    : null,
+                          ),
+                          SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  category,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  '${controller.pdfDocuments.where((n) => n.category == category).length} 条笔记',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+        ],
+      );
+    }
+
+    // Note selection
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '选择笔记',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 12),
+        ...controller.pdfDocuments
+            .map(
+              (note) => GestureDetector(
+                onTap: () => controller.selectNote(note.id),
                 child: Container(
                   margin: EdgeInsets.only(bottom: 12),
                   child: PixelCard(
-                    backgroundColor: controller.selectedCategory.value == category
-                        ? AppTheme.primaryColor.withOpacity(0.2)
-                        : Colors.white,
+                    backgroundColor:
+                        controller.selectedNoteId.value == note.id
+                            ? AppTheme.primaryColor.withOpacity(0.2)
+                            : Colors.white,
                     padding: EdgeInsets.all(16),
                     child: Row(
                       children: [
@@ -240,19 +333,26 @@ class QuizChallengeSelectView extends GetView<QuizController> {
                           height: 24,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: controller.selectedCategory.value == category
-                                ? AppTheme.primaryColor
-                                : Colors.grey[300],
+                            color:
+                                controller.selectedNoteId.value == note.id
+                                    ? AppTheme.primaryColor
+                                    : Colors.grey[300],
                             border: Border.all(
-                              color: controller.selectedCategory.value == category
-                                  ? AppTheme.primaryColor
-                                  : Colors.grey,
+                              color:
+                                  controller.selectedNoteId.value == note.id
+                                      ? AppTheme.primaryColor
+                                      : Colors.grey,
                               width: 2,
                             ),
                           ),
-                          child: controller.selectedCategory.value == category
-                              ? Icon(Icons.check, color: Colors.white, size: 16)
-                              : null,
+                          child:
+                              controller.selectedNoteId.value == note.id
+                                  ? Icon(
+                                    Icons.check,
+                                    color: Colors.white,
+                                    size: 16,
+                                  )
+                                  : null,
                         ),
                         SizedBox(width: 16),
                         Expanded(
@@ -260,7 +360,7 @@ class QuizChallengeSelectView extends GetView<QuizController> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                category,
+                                note.fileName ?? '未命名文档',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -268,7 +368,7 @@ class QuizChallengeSelectView extends GetView<QuizController> {
                               ),
                               SizedBox(height: 4),
                               Text(
-                                '${controller.notes.where((n) => n.category == category).length} 条笔记',
+                                note.category ?? '未分类',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.grey[700],
@@ -281,84 +381,9 @@ class QuizChallengeSelectView extends GetView<QuizController> {
                     ),
                   ),
                 ),
-              )
-          ).toList(),
-        ],
-      );
-    }
-
-    // Note selection
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '选择笔记',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: 12),
-        ...controller.notes.map((note) =>
-            GestureDetector(
-              onTap: () => controller.selectNote(note.id),
-              child: Container(
-                margin: EdgeInsets.only(bottom: 12),
-                child: PixelCard(
-                  backgroundColor: controller.selectedNoteId.value == note.id
-                      ? AppTheme.primaryColor.withOpacity(0.2)
-                      : Colors.white,
-                  padding: EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: controller.selectedNoteId.value == note.id
-                              ? AppTheme.primaryColor
-                              : Colors.grey[300],
-                          border: Border.all(
-                            color: controller.selectedNoteId.value == note.id
-                                ? AppTheme.primaryColor
-                                : Colors.grey,
-                            width: 2,
-                          ),
-                        ),
-                        child: controller.selectedNoteId.value == note.id
-                            ? Icon(Icons.check, color: Colors.white, size: 16)
-                            : null,
-                      ),
-                      SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              note.title,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              note.category,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[700],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ),
             )
-        ).toList(),
+            .toList(),
       ],
     );
   }
