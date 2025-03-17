@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart';
 import 'package:pdf/pdf.dart';
+import '../../../data/models/chaQuestion.dart';
 import '../../../data/models/question.dart';
 import '../../../data/models/note.dart';
 import '../../../data/repositories/question_repository.dart';
@@ -35,7 +36,7 @@ class QuizController extends GetxController {
 
   // Observable variables
   final RxInt currentNavIndex = 1.obs;
-  final RxList<Question> questions = <Question>[].obs;
+  final RxList<chaQuestion> questions = <chaQuestion>[].obs;
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
 
@@ -86,9 +87,9 @@ class QuizController extends GetxController {
     try {
       isLoading.value = true;
       // 等待 LinkNoteController 加载 PDF 数据
-            await _linkNoteController.loadPdfDocuments();
+      await _linkNoteController.loadPdfDocuments();
 
-    pdfDocuments = _linkNoteController.pdfDocuments;
+      pdfDocuments = _linkNoteController.pdfDocuments;
 
       // 确认数据已加载
       print('PDF Documents loaded: ${pdfDocuments.length}');
@@ -123,8 +124,15 @@ class QuizController extends GetxController {
         print("get questions");
         final parsedResponse = jsonDecode(decodedResponse);
         print(parsedResponse);
-        final List<dynamic> data = parsedResponse['data'];
-        questions.value = data.map((item) => Question.fromJson(item)).toList();
+        print("查看data是否有数据");
+        print(parsedResponse);  // 确认 parsedResponse 是一个包含问题数据的列表
+        if (parsedResponse is List) {
+          questions.value = parsedResponse.map<chaQuestion>((item) => chaQuestion.fromJson(item)).toList();
+        } else {
+          print("parsedResponse 不是 List 类型，无法进行 map 操作");
+        }
+        print("question已经加载");
+        print(questions);
       } else {
         print("failed to load questions");
       }
@@ -237,20 +245,40 @@ class QuizController extends GetxController {
     try {
       isLoading.value = true;
 
-      List<Question> challengeQuestions = [];
+      List<chaQuestion> challengeQuestions = [];
       String challengeTitle = '';
+          if (questions.isEmpty) {
+      await loadQuestions();  // Wait until questions are loaded
+    }
+          print("查看是否选择pdf");
+          print(selectedNoteId.value);
       // 如果已选pdf
       if (selectedNoteId.value != -1) {
+        print("选择了笔记挑战📒");
         final note = pdfDocuments.firstWhere(
           (n) => n.id == selectedNoteId.value,
         );
         challengeTitle = '${note.fileName} - 挑战';
-        // challengeQuestions = await _questionRepository.getQuestionsFromNoteContent(note);
+        final noteQuestions =
+            questions.where((q) => q.sourceId == note.id).toList();
+        challengeQuestions = noteQuestions;
       } else if (selectedCategory.value.isNotEmpty) {
         challengeTitle = '${selectedCategory.value} - 分类挑战';
-        // challengeQuestions = await _questionRepository.getQuestionsFromCategory(selectedCategory.value);
+        final categoryQuestions =
+            questions
+                .where(
+                  (q) =>
+                      q.category?.toLowerCase().contains(
+                        selectedCategory.toLowerCase(),
+                      ) ??
+                      false,
+                )
+                .toList();
+        challengeQuestions = categoryQuestions;
       } else {
         challengeTitle = '随机挑战';
+        print("选择了随机挑战！🫤");
+        print(questions);
         challengeQuestions = questions.toList()..shuffle();
         challengeQuestions = challengeQuestions.take(5).toList();
       }
@@ -276,8 +304,6 @@ class QuizController extends GetxController {
       challengeHistory.insert(0, challenge);
 
       isLoading.value = false;
-
-      questions.value = challengeQuestions;
       currentQuestionIndex.value = 0;
       isAnswered.value = false;
       answer.value = '';
@@ -291,7 +317,7 @@ class QuizController extends GetxController {
 
   // Continue an existing challenge
   void continueChallenge(Map<String, dynamic> challenge) {
-    questions.value = List<Question>.from(challenge['questions']);
+    questions.value = List<chaQuestion>.from(challenge['questions']);
     currentQuestionIndex.value = challenge['completedCount'];
     isAnswered.value = false;
     answer.value = '';

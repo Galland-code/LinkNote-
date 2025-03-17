@@ -37,7 +37,7 @@ class QuizHistoryView extends GetView<QuizController> {
         children: [
           Container(
             width: double.infinity,
-            height: 80,
+            height: 70,
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/pixel-title.png'), // 替换为你的图片路径

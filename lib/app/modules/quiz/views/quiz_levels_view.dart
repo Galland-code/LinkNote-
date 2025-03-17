@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:linknote/core/extensions/context_extensions.dart';
+import '../../../data/models/chaQuestion.dart';
 import '../../../data/models/question.dart';
 import '../../../routes/app_routes.dart';
 import '../controllers/quiz_controller.dart';
@@ -16,17 +18,10 @@ class QuizLevelsView extends GetView<QuizController> {
 
     return Scaffold(
       body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppTheme.backgroundColor,
-            image: DecorationImage(
-              image: AssetImage('assets/images/grid_background.png'),
-              repeat: ImageRepeat.repeat,
-            ),
-          ),
+        child: context.withGridBackground(
           child: Column(
             children: [
-              _buildHeader(challenge),
+              _buildHeader(),
               Expanded(
                 child: SingleChildScrollView(
                   padding: EdgeInsets.all(16),
@@ -48,26 +43,36 @@ class QuizLevelsView extends GetView<QuizController> {
     );
   }
 
-  Widget _buildHeader(Map<String, dynamic> challenge) {
+  Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 20),
-      child: Center(
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black, width: 2),
+      child: Stack(
+        alignment: Alignment.centerRight, // 右对齐
+        children: [
+          Container(
+            width: double.infinity,
+            height: 70,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/pixel-title.png'), // 替换为你的图片路径
+                fit: BoxFit.contain,
+              ),
+            ),
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(width: 8),
+                  Text('挑战关卡', style: AppTheme.titleStyle),
+                  SizedBox(width: 8),
+                ],
+              ),
+            ),
           ),
-          child: Text(
-            '挑战关卡',
-            style: AppTheme.titleStyle,
-          ),
-        ),
+        ],
       ),
     );
   }
-
   Widget _buildChallengeInfo(Map<String, dynamic> challenge) {
     return PixelCard(
       padding: EdgeInsets.all(20),
@@ -108,7 +113,7 @@ class QuizLevelsView extends GetView<QuizController> {
           ),
           SizedBox(height: 12),
           Text(
-            '来源: ${challenge['source']}',
+            '来源: 类别-${challenge['source']}',
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[700],
@@ -151,7 +156,7 @@ class QuizLevelsView extends GetView<QuizController> {
   }
 
   Widget _buildLevelsList(Map<String, dynamic> challenge) {
-    final List<Question> questions = List<Question>.from(challenge['questions']);
+    final List<chaQuestion> questions = List<chaQuestion>.from(challenge['questions']);
     final completedCount = challenge['completedCount'];
 
     return Column(

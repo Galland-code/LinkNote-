@@ -29,7 +29,6 @@ class QuizQuestionView extends GetView<QuizController> {
                   _buildHeader(),
                   _buildProgressBar(),
                   _buildQuestionCard(currentQuestion),
-                  _buildOptions(currentQuestion),
                   _buildQuestionBasedOnType(currentQuestion), // 根据题目类型渲染不同内容
                   _buildNavigationButtons(),
                 ],
@@ -44,16 +43,30 @@ class QuizQuestionView extends GetView<QuizController> {
   Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 20),
-      child: Center(
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black, width: 2),
+      child: Stack(
+        alignment: Alignment.centerRight, // 右对齐
+        children: [
+          Container(
+            width: double.infinity,
+            height: 70,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/pixel-title.png'), // 替换为你的图片路径
+                fit: BoxFit.contain,
+              ),
+            ),
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(width: 8),
+                  Text('答题中', style: AppTheme.titleStyle),
+                  SizedBox(width: 8),
+                ],
+              ),
+            ),
           ),
-          child: Text('答题中...', style: AppTheme.titleStyle),
-        ),
+        ],
       ),
     );
   }
@@ -136,6 +149,9 @@ class QuizQuestionView extends GetView<QuizController> {
   Widget _buildQuestionBasedOnType(question) {
     switch (question.type) {
       case '选择题':
+        print("选择题长度");
+        print(question.options.length);
+        print(question);
         return _buildOptions(question); // 选择题渲染
       case '填空题':
         return _buildFillInBlank(question); // 填空题渲染

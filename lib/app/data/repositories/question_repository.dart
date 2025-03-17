@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:linknote/app/data/models/pdf_document.dart';
 import '../models/note.dart';
 import '../models/question.dart';
 import '../providers/api_provider.dart';
@@ -26,7 +27,7 @@ class QuestionRepository {
 
         final List<dynamic> data = responseData['content'];
         final List<Question> questions = [];
-print("question还未赋值");
+        print("question还未赋值");
         for (var item in data) {
           try {
             if (item['question'] != null && item['pdfDocument1'] != null) {
@@ -40,7 +41,7 @@ print("question还未赋值");
             print("Error parsing item: $e, Item: $item");
           }
         }
-print("question结束");
+        print("question结束");
         // 保存到本地数据库
         await _databaseService.saveQuestions(questions);
         print("保存成功");
@@ -55,6 +56,7 @@ print("question结束");
       return _databaseService.getAllQuestions();
     }
   }
+
   Future<List<Question>> getQuestionsFromApi(int userId) async {
     try {
       final response = await _apiProvider.get(
@@ -109,79 +111,96 @@ print("question结束");
   }
 
   // 根据笔记内容生成问题
-  // Future<List<Question>> getQuestionsFromNoteContent(Note note) async {
-  //   try {
-  //     // 在实际应用中，这部分会通过API调用后端服务来处理笔记内容生成问题
-  //     // 这里我们使用模拟数据
-  //
-  //     List<Question> mockQuestions = [];
-  //
-  //     // 生成5-10个问题
-  //     final questionCount = 5 + (note.title.length % 6); // 5-10个问题
-  //
-  //     for (int i = 0; i < questionCount; i++) {
-  //       mockQuestions.add(Question(
-  //         id: 'note_${note.id}_question_$i',
-  //         content: '关于"${note.title}"的问题 ${i + 1}',
-  //         options: [
-  //           '选项A - ${note.title.substring(0, note.title.length > 3 ? 3 : note.title.length)}',
-  //           '选项B - ${note.title}',
-  //           '选项C - ${note.category}',
-  //           '选项D - 以上都不对'
-  //         ],
-  //         correctOptionIndex: i % 4, // 简单的模式用于模拟数据
-  //         source: note.title, type: '',
-  //       ));
-  //     }
-  //
-  //     return mockQuestions;
-  //   } catch (e) {
-  //     print('从笔记生成问题时出错: $e');
-  //     // 失败时返回空列表
-  //     return [];
-  //   }
-  // }
+  Future<List<Question>> getQuestionsFromNoteContent(PdfDocument note) async {
+    try {
+      // 在实际应用中，这部分会通过API调用后端服务来处理笔记内容生成问题
+      // 这里我们使用模拟数据
 
-  // 根据笔记分类生成问题
-  // Future<List<Question>> getQuestionsFromCategory(String category) async {
-  //   try {
-  //     // 获取所有可能具有此类别/来源的问题
-  //     final allQuestions = _databaseService.getAllQuestions();
-  //
-  //     // 根据类别/来源筛选问题
-  //     final categoryQuestions = allQuestions.where((q) =>
-  //         q.source.toLowerCase().contains(category.toLowerCase())).toList();
-  //
-  //     // 如果数据库中有足够的问题，使用这些问题
-  //     if (categoryQuestions.length >= 5) {
-  //       categoryQuestions.shuffle();
-  //       return categoryQuestions.take(10).toList();
-  //     }
-  //
-  //     // 否则，生成模拟问题
-  //     List<Question> mockQuestions = List.from(categoryQuestions);
-  //
-  //     // 添加更多问题，至少达到5个
-  //     for (int i = categoryQuestions.length; i < 5; i++) {
-  //       mockQuestions.add(Question(
-  //         id: 'category_${category}_question_$i',
-  //         content: '关于"${category}"的问题 ${i + 1}',
-  //         options: [
-  //           '选项A - ${category}相关',
-  //           '选项B - ${category}理论',
-  //           '选项C - ${category}应用',
-  //           '选项D - 以上都不对'
-  //         ],
-  //         correctOptionIndex: i % 4, // 简单的模式用于模拟数据
-  //         source: category,
-  //       ));
-  //     }
-  //
-  //     return mockQuestions;
-  //   } catch (e) {
-  //     print('从分类生成问题时出错: $e');
-  //     // 失败时返回空列表
-  //     return [];
-  //   }
-  // }
+      List<Question> mockQuestions = [];
+
+      // 生成5-10个问题
+      final questionCount = 5 + (note.fileName.length % 6); // 5-10个问题
+
+      for (int i = 0; i < questionCount; i++) {
+        mockQuestions.add(
+          Question(
+            id: 'note_${note.id}_question_$i',
+            content: '关于"${note.fileName}"的问题 ${i + 1}',
+            options: [
+              '选项A - ${note.fileName.substring(0, note.fileName.length > 3 ? 3 : note.fileName.length)}',
+              '选项B - ${note.fileName}',
+              '选项C - ${note.category}',
+              '选项D - 以上都不对',
+            ],
+            correctOptionIndex: 'A', // 简单的模式用于模拟数据
+            source: note.fileName,
+            type: '',
+            difficulty: '简单',
+            sourceId: 1,
+            category: '选择题',
+          ),
+        );
+      }
+
+      return mockQuestions;
+    } catch (e) {
+      print('从笔记生成问题时出错: $e');
+      // 失败时返回空列表
+      return [];
+    }
+  }
+
+  //根据笔记分类生成问题
+  Future<List<Question>> getQuestionsFromCategory(String category) async {
+    try {
+      // 获取所有可能具有此类别/来源的问题
+      final allQuestions = _databaseService.getAllQuestions();
+
+      // 根据类别/来源筛选问题
+      final categoryQuestions =
+          allQuestions
+              .where(
+                (q) =>
+                    q.category.toLowerCase().contains(category.toLowerCase()),
+              )
+              .toList();
+
+      // 如果数据库中有足够的问题，使用这些问题
+      if (categoryQuestions.length >= 5) {
+        categoryQuestions.shuffle();
+        return categoryQuestions.take(5).toList();
+      }
+
+      // 否则，生成模拟问题
+      List<Question> mockQuestions = List.from(categoryQuestions);
+
+      // 添加更多问题，至少达到5个
+      for (int i = categoryQuestions.length; i < 5; i++) {
+        mockQuestions.add(
+          Question(
+            id: 'category_${category}_question_$i',
+            content: '关于"${category}"的问题 ${i + 1}',
+            options: [
+              '选项A - ${category}相关',
+              '选项B - ${category}理论',
+              '选项C - ${category}应用',
+              '选项D - 以上都不对',
+            ],
+            correctOptionIndex: 'A',
+            source: '人工智能导论',
+            type: '选择题',
+            difficulty: '简单',
+            sourceId: 1,
+            category: '人工智能',
+          ),
+        ); // 简单的模式用于模拟数据
+      }
+
+      return mockQuestions;
+    } catch (e) {
+      print('从分类生成问题时出错: $e');
+      // 失败时返回空列表
+      return [];
+    }
+  }
 }

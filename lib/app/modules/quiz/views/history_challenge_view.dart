@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:linknote/core/extensions/context_extensions.dart';
 import '../controllers/quiz_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../widgets/pixel_card.dart';
@@ -11,14 +12,7 @@ class HistoryChallengeView extends GetView<QuizController> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppTheme.backgroundColor,
-            image: DecorationImage(
-              image: AssetImage('assets/images/grid_background.png'),
-              repeat: ImageRepeat.repeat,
-            ),
-          ),
+        child: context.withGridBackground(
           child: Obx(() {
             if (controller.isLoading.value) {
               return Center(child: PixelLoading());
