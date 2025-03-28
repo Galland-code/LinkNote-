@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:linknote/core/extensions/context_extensions.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../controllers/profile_controller.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -12,14 +13,8 @@ class DailyTasksView extends GetView<ProfileController> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppTheme.backgroundColor,
-            image: DecorationImage(
-              image: AssetImage('assets/images/grid_background.png'),
-              repeat: ImageRepeat.repeat,
-            ),
-          ),
+        child: context
+        .withGridBackground(
           child: Column(
             children: [
               _buildHeader(),
@@ -38,22 +33,34 @@ class DailyTasksView extends GetView<ProfileController> {
   Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 20),
-      child: Center(
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black, width: 2),
+      child: Stack(
+        alignment: Alignment.centerRight, // 右对齐
+        children: [
+          Container(
+            width: double.infinity,
+            height: 70,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/pixel-title.png'), // 替换为你的图片路径
+                fit: BoxFit.contain,
+              ),
+            ),
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(width: 8),
+                  Text('今日任务', style: AppTheme.titleStyle),
+                  SizedBox(width: 8),
+                ],
+              ),
+            ),
           ),
-          child: Text(
-            '今日任务',
-            style: AppTheme.titleStyle,
-          ),
-        ),
+        ],
       ),
     );
   }
+
 
   Widget _buildProgressSection() {
     return Padding(

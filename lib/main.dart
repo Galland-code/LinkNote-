@@ -41,10 +41,13 @@ void main() async {
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
     ),
-  );
-
-  // 初始化Hive
+  );// 初始化 Hive
+  Directory appDocDir = await getApplicationDocumentsDirectory();
   await Hive.initFlutter();
+  
+  Hive.init(appDocDir.path);
+  // 如果需要清除数据，在注册适配器之前执行
+  await Hive.deleteFromDisk();
 
   // 注册Hive适配器
   Hive.registerAdapter(QuestionAdapter());
@@ -58,9 +61,6 @@ void main() async {
   // 初始化依赖注入
   await initServices();
 
-  await Hive.deleteFromDisk(); // 删除所有 Hive 数据
-  Directory appDocDir = await getApplicationDocumentsDirectory();
-  Hive.init(appDocDir.path);
   print('Hive database path: ${appDocDir.path}/hive');
 
   Get.put(UserController()); // 初始化 UserController
@@ -72,7 +72,7 @@ void main() async {
 Future<void> initServices() async {
   // API提供者
   Get.put(ApiProvider());
-  Get.put(UserController()); 
+  Get.put(UserController());
 
   // 数据库服务
   final databaseService = await Get.putAsync(() => DatabaseService().init());
@@ -85,6 +85,7 @@ Future<void> initServices() async {
 
   // 应用服务
   Get.put(QuizService());
+  Get.put(DatabaseService());
 
   // 预加载数据
   await _preloadData();
@@ -97,8 +98,12 @@ Future<void> _preloadData() async {
   try {
     // 如果本地数据库为空，加载模拟数据
     final databaseService = Get.find<DatabaseService>();
+    print("加载成就mock");
+    await databaseService.saveAchievements(MockData.getMockAchievements());
+
     if (databaseService.getAllQuestions().isEmpty) {
       // 导入模拟数据到数据库
+      print("导入模拟数据");
       await _importMockData();
     }
   } catch (e) {
@@ -117,7 +122,7 @@ Future<void> _importMockData() async {
 
     // 导入笔记数据
     await databaseService.saveNotes(MockData.getMockNotes());
-
+    print("导入成就数据");
     // 导入成就数据
     await databaseService.saveAchievements(MockData.getMockAchievements());
 

@@ -8,6 +8,8 @@ import '../../../widgets/pixel_card.dart';
 import '../../../widgets/pixel_button.dart';
 
 class AchievementsView extends GetView<ProfileController> {
+  const AchievementsView({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,16 +30,30 @@ class AchievementsView extends GetView<ProfileController> {
   Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 20),
-      child: Center(
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black, width: 2),
+      child: Stack(
+        alignment: Alignment.centerRight, // 右对齐
+        children: [
+          Container(
+            width: double.infinity,
+            height: 70,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/pixel-title.png'), // 替换为你的图片路径
+                fit: BoxFit.contain,
+              ),
+            ),
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(width: 8),
+                  Text('成就列表', style: AppTheme.titleStyle),
+                  SizedBox(width: 8),
+                ],
+              ),
+            ),
           ),
-          child: Text('成就列表', style: AppTheme.titleStyle),
-        ),
+        ],
       ),
     );
   }
@@ -53,66 +69,60 @@ class AchievementsView extends GetView<ProfileController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 已解锁成就
-            if (unlockedAchievements.isNotEmpty) ...[
-              Padding(
-                padding: EdgeInsets.only(left: 8, bottom: 8),
-                child: Text(
-                  '已解锁 (${unlockedAchievements.length})',
-                  style: AppTheme.subtitleStyle,
+if (unlockedAchievements.isNotEmpty) ...[
+  Padding(
+    padding: EdgeInsets.only(left: 8, bottom: 8),
+    child: Text(
+      '已解锁 (${unlockedAchievements.length})',
+      style: AppTheme.subtitleStyle,
+    ),
+  ),
+  Wrap(
+    spacing: 12, // 水平间距
+    runSpacing: 16, // 垂直间距
+    children: unlockedAchievements.map((achievement) {
+      return GestureDetector(
+        onTap: () => controller.navigateToAchievementDetail(achievement),
+        child: Container(
+          width: 70, // 固定宽度
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: EdgeInsets.all(8),
+                child: SvgPicture.asset(
+                  achievement.iconPath.endsWith('.svg')
+                      ? achievement.iconPath
+                      : '${achievement.iconPath}.svg',
+                  width: 60,
+                  height: 60,
+                  colorFilter: achievement.isUnlocked
+                      ? null
+                      : ColorFilter.mode(
+                          Colors.grey.shade400,
+                          BlendMode.srcIn,
+                        ),
                 ),
               ),
-              PixelCard(
-                padding: EdgeInsets.all(16),
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.8,
-                  ),
-                  itemCount: unlockedAchievements.length,
-                  itemBuilder: (context, index) {
-                    final achievement = unlockedAchievements[index];
-                    return GestureDetector(
-                      onTap:
-                          () => controller.navigateToAchievementDetail(
-                            achievement,
-                          ),
-                      child: Column(
-                        children: [
-                          SvgPicture.asset(
-                            achievement.iconPath.endsWith('.svg')
-                                ? achievement.iconPath
-                                : '${achievement.iconPath}.svg',
-                            width: 40,
-                            height: 40,
-                            colorFilter:
-                                achievement.isUnlocked
-                                    ? null
-                                    : ColorFilter.mode(
-                                      Colors.grey.shade400,
-                                      BlendMode.srcIn,
-                                    ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            achievement.title,
-                            style: TextStyle(fontSize: 10),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+              SizedBox(height: 4),
+              Text(
+                achievement.title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              SizedBox(height: 24),
             ],
-
+          ),
+        ),
+      );
+    }).toList(),
+  ),
+  SizedBox(height: 24),
+],
             // 进行中成就
             if (inProgressAchievements.isNotEmpty) ...[
               Padding(

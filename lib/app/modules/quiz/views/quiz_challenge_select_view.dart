@@ -17,28 +17,72 @@ class QuizChallengeSelectView extends GetView<QuizController> {
             children: [
               _buildHeader(),
               Expanded(
-                child: Obx(
-                  () =>
-                      controller.isLoading.value
-                          ? Center(child: PixelLoading())
-                          : SingleChildScrollView(
-                            padding: EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildSelectionTabs(),
-                                SizedBox(height: 16),
-                                _buildSelectionContent(),
-                              ],
-                            ),
-                          ),
-                ),
+                child: Obx(() {
+                if (controller.showDialogForGeneration.value) {
+                  // 显示生成问题的对话框
+                  _showQuestionGenerationDialog();
+                }
+                return SingleChildScrollView(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSelectionTabs(),
+                      SizedBox(height: 16),
+                      _buildSelectionContent(),
+                    ],
+                  ),
+                );
+              }),
               ),
               _buildBottomButtons(),
             ],
           ),
         ),
       ),
+    );
+  }
+void _showQuestionGenerationDialog() {
+    showDialog(
+      context: Get.context!,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('生成问题'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('该笔记没有题目。请输入您希望生成的题目数量：'),
+              TextField(
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  controller.questionCount.value = int.tryParse(value) ?? 5;
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // 调用生成题目的接口
+                controller.generateQuestionsForNote(
+                  controller.noteIdToGenerateQuestions.value,
+                  controller.questionCount.value,
+                );
+                controller.showDialogForGeneration.value = false;
+                Get.back(); // 关闭对话框
+              },
+              child: Text('生成'),
+            ),
+            TextButton(
+              onPressed: () {
+                controller.showDialogForGeneration.value = false;
+                Get.back(); // 关闭对话框
+              },
+              child: Text('取消'),
+            ),
+          ],
+        );
+      },
     );
   }
 

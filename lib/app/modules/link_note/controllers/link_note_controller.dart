@@ -181,9 +181,15 @@ class LinkNoteController extends GetxController {
     }
   }
 
-  // 按分类筛选笔记
-  List<Note> getNotesByCategory(String category) {
-    return notes.where((note) => note.category == category).toList();
+  // 按分类筛选笔记和PDF文件
+  Map<String, dynamic> getNotesByCategory(String category) {
+    final filteredNotes = notes.where((note) => note.category == category).toList();
+    final filteredPdfs = pdfDocuments.where((pdf) => pdf.category == category).toList();
+    
+    return {
+      'notes': filteredNotes,
+      'pdfs': filteredPdfs,
+    };
   }
 
   // 上传 PDF 文件的函数

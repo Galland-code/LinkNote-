@@ -15,6 +15,7 @@ class QuizLevelsView extends GetView<QuizController> {
   @override
   Widget build(BuildContext context) {
     final Map<String, dynamic> challenge = Get.arguments['challenge'];
+    print(challenge);
 
     return Scaffold(
       body: SafeArea(
@@ -186,13 +187,20 @@ class QuizLevelsView extends GetView<QuizController> {
 
             return GestureDetector(
               onTap: isNext || isCompleted
-                  ? () {
-                controller.currentQuestionIndex.value = index;
-                controller.isAnswered.value = false;
-                controller.answer.value = '';
-                Get.toNamed(Routes.QUIZ_QUESTION);
-              }
-                  : null,
+    ? () {
+        controller.currentQuestionIndex.value = index;
+        controller.isAnswered.value = false;
+        controller.answer.value = '';
+        // 传递整个 questions 列表和当前题目索引
+        Get.toNamed(
+          Routes.QUIZ_QUESTION,
+          arguments: {
+            'questions': questions,
+            'currentIndex': index,
+          },
+        );
+      }
+    : null,
               child: Container(
                 decoration: BoxDecoration(
                   color: isCompleted
@@ -232,6 +240,8 @@ class QuizLevelsView extends GetView<QuizController> {
   }
 
   Widget _buildBottomButtons(Map<String, dynamic> challenge) {
+  final List<chaQuestion> questions = List<chaQuestion>.from(challenge['questions']);
+
     return Container(
       padding: EdgeInsets.all(16),
       child: Row(
@@ -250,18 +260,27 @@ class QuizLevelsView extends GetView<QuizController> {
                   ? '重新开始'
                   : '继续挑战',
               onPressed: () {
+                              int startIndex = 0;
+
                 if (challenge['completedCount'] == challenge['questionCount']) {
                   // Reset challenge
                   challenge['completedCount'] = 0;
                   controller.currentQuestionIndex.value = 0;
                 } else {
+                                  startIndex = challenge['completedCount'];
+
                   controller.currentQuestionIndex.value = challenge['completedCount'];
                 }
 
                 controller.isAnswered.value = false;
                 controller.answer.value = '';
-                Get.toNamed(Routes.QUIZ_QUESTION);
-              },
+Get.toNamed(
+                Routes.QUIZ_QUESTION,
+                arguments: {
+                  'questions':questions,
+                  'currentIndex': startIndex,
+                },
+              );              },
             ),
           ),
         ],

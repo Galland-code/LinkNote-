@@ -102,8 +102,42 @@ class ProfileView extends GetView<ProfileController> {
                 ),
               ),
             ),
-            SizedBox(width: 16),
-            // Rest of the section remains the same...
+            SizedBox(width: 16),Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    controller.currentUser.value?.username ?? '未登录',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Lv.${controller.currentUser.value?.level ?? 1} · ${controller.currentUser.value?.experiencePoints ?? 0}经验',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  ),
+                  SizedBox(height: 8),
+                  // 等级进度条
+                  LinearProgressIndicator(
+                    value:
+                    (controller.currentUser.value?.experiencePoints ?? 0) %
+                        100 /
+                        100,
+                    backgroundColor: Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppTheme.primaryColor,
+                    ),
+                    minHeight: 8,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 8),
+            // 编辑按钮
+            IconButton(
+              icon: Icon(Icons.edit, color: AppTheme.primaryColor),
+              onPressed: () => controller.navigateToEditProfile(),
+            ),
           ],
         ),
       ),

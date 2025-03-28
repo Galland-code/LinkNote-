@@ -49,6 +49,9 @@ class QuizController extends GetxController {
   // Challenge history
   final RxList<Map<String, dynamic>> challengeHistory =
       <Map<String, dynamic>>[].obs;
+  RxBool showDialogForGeneration = false.obs;
+  RxInt noteIdToGenerateQuestions = (-1).obs; // 用于存储需要生成题目的笔记 ID
+  RxInt questionCount = 5.obs; // 用于存储用户输入的题目数量
 
   // Current question state
   final RxInt currentQuestionIndex = 0.obs;
@@ -69,6 +72,7 @@ class QuizController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    onQuestionsChanged();
     if (!Get.isRegistered<LinkNoteController>()) {
       Get.put(LinkNoteController());
     }
@@ -82,6 +86,7 @@ class QuizController extends GetxController {
       startQnaSession();
     });
   }
+
 
   Future<void> initializePdfData() async {
     try {
@@ -107,7 +112,7 @@ class QuizController extends GetxController {
   // Load all questions
   Future<void> loadQuestions() async {
     try {
-      print("begin to load questions");
+      print("开始加载问题");
       int userId = Get.find<UserController>().userId.value;
       isLoading.value = true;
       final response = await get(
@@ -116,29 +121,41 @@ class QuizController extends GetxController {
         ),
       );
       if (response.statusCode == 200) {
-        // 使用 UTF-8 解码字节数据
         String decodedResponse = utf8.decode(
           response.bodyBytes,
           allowMalformed: true,
         );
-        print("get questions");
+        print("API响应数据: $decodedResponse"); // 检查原始响应
+
         final parsedResponse = jsonDecode(decodedResponse);
-        print(parsedResponse);
-        print("查看data是否有数据");
-        print(parsedResponse);  // 确认 parsedResponse 是一个包含问题数据的列表
+        print("解析后的数据类型: ${parsedResponse.runtimeType}"); // 检查数据类型
+        print("解析后的数据内容: $parsedResponse"); // 检查解析后的数据
+
         if (parsedResponse is List) {
-          questions.value = parsedResponse.map<chaQuestion>((item) => chaQuestion.fromJson(item)).toList();
+          questions.value =
+              parsedResponse.map<chaQuestion>((item) {
+                print("处理单个问题数据: $item"); // 检查每个问题的数据
+                final question = chaQuestion.fromJson(item);
+                print(
+                  "转换后的问题对象: id=${question.id}, type=${question.type}, answer=${question.answer}",
+                ); // 检查转换后的对象
+                return question;
+              }).toList();
+
+          print("最终问题列表长度: ${questions.length}"); // 检查最终列表
+          print(
+            "第一个问题示例: ${questions.isNotEmpty ? questions[0].content : '无问题'}",
+          ); // 检查具体问题
         } else {
-          print("parsedResponse 不是 List 类型，无法进行 map 操作");
+          print("数据格式错误：期望List类型，实际是 ${parsedResponse.runtimeType}");
         }
-        print("question已经加载");
-        print(questions);
       } else {
-        print("failed to load questions");
+        print("API请求失败: ${response.statusCode}");
       }
       isLoading.value = false;
-      errorMessage.value = '';
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print("加载问题时出错: $e");
+      print("错误堆栈: $stackTrace"); // 添加堆栈跟踪
       isLoading.value = false;
       errorMessage.value = '加载问题失败: $e';
     }
@@ -247,42 +264,65 @@ class QuizController extends GetxController {
 
       List<chaQuestion> challengeQuestions = [];
       String challengeTitle = '';
-          if (questions.isEmpty) {
-      await loadQuestions();  // Wait until questions are loaded
-    }
-          print("查看是否选择pdf");
-          print(selectedNoteId.value);
+      if (questions.isEmpty) {
+        print("问题列表为空，正在重新加载...");
+        await loadQuestions(); // 等待加载问题
+        if (questions.isEmpty) {
+          print("加载后问题列表仍为空");
+          throw Exception("没有可用的问题");
+        }
+      }
+      print("当前问题总数: ${questions.length}");
+
+      print("查看是否选择pdf");
+      print(selectedNoteId.value);
       // 如果已选pdf
+      // 2. 根据不同模式选择问题
       if (selectedNoteId.value != -1) {
-        print("选择了笔记挑战📒");
+        print("笔记挑战模式 - 选中的笔记ID: ${selectedNoteId.value}");
         final note = pdfDocuments.firstWhere(
           (n) => n.id == selectedNoteId.value,
+          orElse: () => throw Exception("未找到选中的笔记"),
         );
+
         challengeTitle = '${note.fileName} - 挑战';
-        final noteQuestions =
+        challengeQuestions =
             questions.where((q) => q.sourceId == note.id).toList();
-        challengeQuestions = noteQuestions;
+        print("找到的笔记相关问题数: ${challengeQuestions.length}");
+ 
+        if (challengeQuestions.isEmpty) {
+    Get.toNamed(Routes.CHALLENGE_GENERAGE, arguments: {'documentId': note.id});
+      }
       } else if (selectedCategory.value.isNotEmpty) {
+        print("分类挑战模式 - 选中的分类: ${selectedCategory.value}");
         challengeTitle = '${selectedCategory.value} - 分类挑战';
-        final categoryQuestions =
+        challengeQuestions =
             questions
                 .where(
-                  (q) =>
-                      q.category?.toLowerCase().contains(
-                        selectedCategory.toLowerCase(),
-                      ) ??
-                      false,
+                  (q) => q.category.toLowerCase().contains(
+                    selectedCategory.value.toLowerCase(),
+                  ),
                 )
                 .toList();
-        challengeQuestions = categoryQuestions;
+
+        print("找到的分类相关问题数: ${challengeQuestions.length}");
+        if (challengeQuestions.isEmpty) {
+          throw Exception("该分类没有相关问题");
+        }
       } else {
         challengeTitle = '随机挑战';
         print("选择了随机挑战！🫤");
         print(questions);
-        challengeQuestions = questions.toList()..shuffle();
+        challengeQuestions = List.from(questions)..shuffle();
         challengeQuestions = challengeQuestions.take(5).toList();
+        print("随机选择的问题数: ${challengeQuestions.length}");
+      }
+      // 3. 创建挑战前检查问题列表
+      if (challengeQuestions.isEmpty) {
+        throw Exception("无法生成挑战：没有找到符合条件的问题");
       }
 
+      // 4. 创建挑战对象
       final challenge = {
         'id': DateTime.now().millisecondsSinceEpoch.toString(),
         'title': challengeTitle,
@@ -290,7 +330,7 @@ class QuizController extends GetxController {
             selectedNoteId.value != -1
                 ? pdfDocuments
                     .firstWhere((n) => n.id == selectedNoteId.value)
-                    .title
+                    .fileName
                 : selectedCategory.value.isNotEmpty
                 ? selectedCategory.value
                 : '多个来源',
@@ -300,32 +340,82 @@ class QuizController extends GetxController {
         'questions': challengeQuestions,
         'levels': challengeQuestions,
       };
+      print(
+        "生成的挑战信息: ${challenge['title']}, 问题数量: ${challenge['questionCount']}",
+      );
 
+      // 5. 更新历史记录和状态
       challengeHistory.insert(0, challenge);
-
-      isLoading.value = false;
       currentQuestionIndex.value = 0;
       isAnswered.value = false;
       answer.value = '';
 
+      // 6. 导航到关卡页面
       Get.toNamed(Routes.QUIZ_LEVELS, arguments: {'challenge': challenge});
     } catch (e) {
-      isLoading.value = false;
+      print("生成挑战失败: $e");
       errorMessage.value = '生成挑战失败: $e';
+    } finally {
+      isLoading.value = false;
     }
+  }
+// 调用生成题目的 API
+Future<void> generateQuestionsForNote(int noteId, int questionCount) async {
+  try {
+
+    print("开始生成题目");
+    print("documentId:$noteId");
+    print("questionCount:$questionCount");
+    final response = await post(
+      Uri.parse('http://82.157.18.189:8080/linknote/api/questions/generate'),
+      body: jsonEncode({
+        'documentId': noteId,
+        'count': questionCount,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('题目生成成功！');
+      // 可以根据需要处理返回的数据，例如更新问题列表
+      loadQuestions(); // 重新加载问题
+    } else {
+      print('生成题目失败: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('生成题目时出错: $e');
+  }
+}
+// 添加生成问题的对话框方法
+  void onQuestionsChanged() {
+    ever(questions, (List<chaQuestion> questionsList) {
+      print("问题列表已更新，当前数量: ${questionsList.length}");
+    });
   }
 
   // Continue an existing challenge
   void continueChallenge(Map<String, dynamic> challenge) {
-    questions.value = List<chaQuestion>.from(challenge['questions']);
-    currentQuestionIndex.value = challenge['completedCount'];
-    isAnswered.value = false;
-    answer.value = '';
+    try {
+      final questionsList = challenge['questions'] as List;
+      questions.value = questionsList.map((q) => q as chaQuestion).toList();
 
-    if (challenge['completedCount'] < challenge['questionCount']) {
-      Get.toNamed(Routes.QUIZ_QUESTION);
-    } else {
-      Get.toNamed(Routes.QUIZ_LEVELS, arguments: {'challenge': challenge});
+      print("继续挑战 - 问题数量: ${questions.length}");
+      print("第一个问题内容: ${questions.first.content}");
+
+      currentQuestionIndex.value = challenge['completedCount'] ?? 0;
+      isAnswered.value = false;
+      answer.value = '';
+
+      if ((challenge['completedCount'] ?? 0) < challenge['questionCount']) {
+        Get.toNamed(Routes.QUIZ_QUESTION);
+      } else {
+        Get.toNamed(Routes.QUIZ_LEVELS, arguments: {'challenge': challenge});
+      }
+    } catch (e) {
+      print("继续挑战时出错: $e");
+      errorMessage.value = '继续挑战失败: $e';
     }
   }
 
@@ -379,19 +469,18 @@ class QuizController extends GetxController {
         switch (currentQuestion.type) {
           case '选择题':
             // 选择题比较选项
-            isCorrect = userAnswer == currentQuestion.correctOptionIndex;
+            isCorrect = userAnswer == currentQuestion.answer;
             break;
 
           case '填空题':
             // 填空题进行精确匹配
-            isCorrect =
-                userAnswer.trim() == currentQuestion.correctOptionIndex.trim();
+            isCorrect = userAnswer.trim() == currentQuestion.answer.trim();
             break;
 
           case '简答题':
             // 简答题需要更复杂的评分逻辑
             // 这里根据关键词匹配来判断
-            final keywords = currentQuestion.correctOptionIndex.split('、');
+            final keywords = currentQuestion.answer.split('、');
             final matchCount =
                 keywords
                     .where((keyword) => userAnswer.contains(keyword))
@@ -411,10 +500,7 @@ class QuizController extends GetxController {
 
         // 显示答案反馈
         qnaConversation.add({
-          'text':
-              isCorrect
-                  ? '回答正确！'
-                  : '回答错误。正确答案是：${currentQuestion.correctOptionIndex}',
+          'text': isCorrect ? '回答正确！' : '回答错误。正确答案是：${currentQuestion.answer}',
           'isUser': false,
         });
 

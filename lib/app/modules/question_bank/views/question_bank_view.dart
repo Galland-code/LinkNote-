@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:linknote/core/extensions/context_extensions.dart';
+import '../../../widgets/pixel_button.dart';
 import '../controllers/question_bank_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../routes/app_routes.dart';
@@ -210,31 +211,34 @@ class QuestionBankView extends GetView<QuestionBankController> {
           SizedBox(width: 12),
           Expanded(
             flex: 2,
-            child: Obx(
-              () => PixelCard(
-                padding: EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.bar_chart),
-                        SizedBox(width: 8),
-                        Text('错题分析:', style: AppTheme.subtitleStyle),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Text('1. 待复习错题数: ${controller.questions.length}'),
-                    SizedBox(height: 4),
-                    ...controller.questionCounts.entries
-                        .map(
-                          (entry) => Padding(
-                            padding: EdgeInsets.only(bottom: 4),
-                            child: Text('2. "${entry.key}" 错题分析报告待查看'),
-                          ),
-                        )
-                        .toList(),
-                  ],
+            child: GestureDetector(
+              onTap: () => _showAnalysisReport(),
+              child: Obx(
+                () => PixelCard(
+                  padding: EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.bar_chart),
+                          SizedBox(width: 8),
+                          Text('错题分析:', style: AppTheme.subtitleStyle),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Text('1. 待复习错题数: ${controller.questions.length}'),
+                      SizedBox(height: 4),
+                      ...controller.questionCounts.entries
+                          .map(
+                            (entry) => Padding(
+                              padding: EdgeInsets.only(bottom: 4),
+                              child: Text('2. "${entry.key}" 错题分析报告待查看'),
+                            ),
+                          )
+                          .toList(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -242,8 +246,62 @@ class QuestionBankView extends GetView<QuestionBankController> {
         ],
       ),
     );
-  }
+  }  
+  
 
+  void _showAnalysisReport() async {
+
+    await controller.fetchWrongAnalysis();
+    
+    if (controller.wrongAnalysis.value != null) {
+      Get.dialog(
+        Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: PixelCard(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+   Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '错题分析报告',
+                      style: AppTheme.subtitleStyle,
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close),
+                      onPressed: () => Get.back(),
+                    ),
+                  ],
+                ),
+                Divider(),
+                SizedBox(height: 12),
+                Text(
+                  controller.wrongAnalysis.value!.analysis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.5,
+                  ),
+                ),
+                SizedBox(height: 20),
+                Center(
+                  child: PixelButton(
+                    text: '我知道了',
+                    onPressed: () => Get.back(),
+                    width: 120,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+  }
   Widget _buildBottomNavBar() {
     return Obx(
       () => BottomNavBar(
@@ -263,7 +321,7 @@ class QuestionBankView extends GetView<QuestionBankController> {
               // Already on question bank
               break;
             case 3:
-              Get.offAllNamed(Routes.ACHIEVEMENTS);
+              Get.offAllNamed(Routes.PROFILE_ACHIEVEMENTS);
               break;
           }
         },

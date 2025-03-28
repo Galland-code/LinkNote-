@@ -17,7 +17,7 @@ abstract class Routes {
   static const QUIZ_CHALLENGE_SELECT = '/quiz/challenge-select';
   static const QUIZ_LEVELS = '/quiz/levels';
   static const QUIZ_CHALLENGE = '/quiz/qna';
-
+  static const CHALLENGE_GENERAGE = '/quiz/generate';
   // LinkNote 子路由
   static const LINK_NOTE_FILE = '/file';
   static const LINK_NOTE_EDIT = '/link-note/edit';
@@ -28,7 +28,6 @@ abstract class Routes {
 
   //ai问答 子路由
   static const AI_CHAT = '/aiChat';
-
 
   // QuestionBank 子路由
   static const QUESTION_BANK_DETAIL = '/question-bank/detail';

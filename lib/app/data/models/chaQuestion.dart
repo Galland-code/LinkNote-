@@ -1,9 +1,9 @@
 class chaQuestion {
-  final String id;
+  final int id;
   final String source; // 对应 document 的 fileName
   final String content;
   final List<String>? options; // 修改为可选属性
-  final String correctOptionIndex; // 对应 answer
+  final String answer; // 对应 answer
   final String type; // 新增 type 属性
   final String difficulty; // 新增 difficulty 属性
   final int sourceId; // 新增 sourceId，对应 document 的 id
@@ -15,7 +15,7 @@ class chaQuestion {
     required this.source,
     required this.content,
     this.options, // 修改为可选属性
-    required this.correctOptionIndex,
+    required this.answer,
     required this.type,
     required this.difficulty,
     required this.sourceId,
@@ -32,10 +32,10 @@ class chaQuestion {
     if (documentData == null) {
       print('Error: documentData is null!');
       return chaQuestion(
-        id: '0',
+        id: -1,
         source: 'Unknown',
         content: 'Unknown',
-        correctOptionIndex: 'A',
+        answer: 'A',
         type: 'Unknown',
         difficulty: 'Unknown',
         sourceId: 0,
@@ -45,14 +45,14 @@ class chaQuestion {
 
     // 返回 Question 对象
     return chaQuestion(
-      id: json['id'].toString(), // 直接使用 id 字段
+      id: json['id'], // 直接使用 id 字段
       source: documentData['fileName'] ?? '未知来源', // 从 document 获取文件名
       content: json['content'] ?? '无内容', // 题目内容
       options: json['options'] != null ? List<String>.from(json['options']) : null, // 选项
-      correctOptionIndex: answer, // 答案
+      answer: answer, // 答案
       type: json['type'] ?? '未知题型', // 题型
       difficulty: json['difficulty'] ?? '未知难度', // 难度
-      sourceId: documentData['id'] as int, // document 的 id
+      sourceId: documentData['id'], // document 的 id
       wrongAnswer: json['wrongAnswer'] as String?, // 错误答案（如果有）
       category: documentData['category'] ?? '未分类', // 从 document 获取分类
     );
@@ -69,4 +69,22 @@ class chaQuestion {
 
   // 辅助方法：判断是否为选择题
   bool get isChoiceQuestion => type == '选择题';
+
+  // 辅助方法：判断是否为填空题
+  bool get isFillInBlank => type == '填空题';
+
+  // 辅助方法：判断是否为简答题
+  bool get isShortAnswer => type == '简答题';
+
+  // 辅助方法：检查答案是否正确
+  bool checkAnswer(String userAnswer) {
+    if (isChoiceQuestion) {
+      return userAnswer.toUpperCase() == answer.toUpperCase();
+    } else if (isFillInBlank) {
+      return userAnswer.trim() == answer.trim();
+    } else {
+      // 简答题可能需要更复杂的匹配逻辑
+      return userAnswer.trim().contains(answer.trim());
+    }
+  }
 }

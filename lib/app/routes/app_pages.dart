@@ -18,6 +18,7 @@ import '../modules/quiz/views/quiz_view.dart';
 import '../modules/quiz/views/quiz_question_view.dart';
 import '../modules/quiz/views/quiz_result_view.dart';
 import '../modules/quiz/views/quiz_history_view.dart';
+import '../modules/quiz/views/quiz_generate_view.dart';
 
 // LinkNote Module
 import '../modules/link_note/bindings/link_note_binding.dart';
@@ -101,6 +102,7 @@ class AppPages {
           name: '/qna',
           page: () => QuizQnaView(),
         ),
+        GetPage(name: '/generate', page: () => QuizGenerateView()),
       ],
     ),
 

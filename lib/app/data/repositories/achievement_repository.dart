@@ -37,20 +37,38 @@ class AchievementRepository {
     }
   }
 
-  // 从本地数据库获取所有成就
-  List<Achievement> getAchievementsFromLocal() {
-    return _databaseService.getAllAchievements();
+  // 判断本地是否有成就数据
+  bool hasLocalAchievements() {
+    final isEmpty = _databaseService.achievementsBox.isEmpty;
+    print("成就box是否为空: $isEmpty");
+    print("成就box长度: ${_databaseService.achievementsBox.length}");
+    return !isEmpty;
   }
 
-  // 获取成就（先尝试API，失败则用本地）
+  // 从本地数据库获取所有成就
+  List<Achievement> getAchievementsFromLocal() {
+    final achievements = _databaseService.getAllAchievements();
+    print("从本地获取的成就数量: ${achievements.length}");
+    return achievements;
+  }
+
+  // 获取成就（先检查本地，如果本地没有则从API获取）
   Future<List<Achievement>> getAchievements() async {
     try {
-      return await getAchievementsFromApi();
+      if (hasLocalAchievements()) {
+        print("使用本地成就");
+        final achievements = getAchievementsFromLocal();
+        print("获取到的本地成就: ${achievements.map((a) => a.title).toList()}");
+        return achievements;
+      } else {
+        print("使用api成就");
+        return await getAchievementsFromApi();
+      }
     } catch (e) {
+      print("出错，使用本地成就: $e");
       return getAchievementsFromLocal();
     }
   }
-
   // 解锁成就
   Future<void> unlockAchievement(String id) async {
     final achievement = _databaseService.getAchievement(id);

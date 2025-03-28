@@ -116,23 +116,39 @@ class DatabaseService extends GetxService {
     await questionsBox.delete(id);
   }
 
-  // 成就相关方法
-  Future<void> saveAchievement(Achievement achievement) async {
-    await achievementsBox.put(achievement.id, achievement);
-  }
-
   Future<void> saveAchievements(List<Achievement> achievements) async {
-    final Map<String, Achievement> achievementsMap = {};
-    for (var achievement in achievements) {
-      achievementsMap[achievement.id] = achievement;
+    try {
+      if (!achievementsBox.isOpen) {
+        achievementsBox = await Hive.openBox<Achievement>(AppConstants.ACHIEVEMENTS_BOX);
+      }
+      print("准备保存成就到数据库，数量: ${achievements.length}");
+      final Map<String, Achievement> achievementsMap = {};
+      for (var achievement in achievements) {
+        achievementsMap[achievement.id] = achievement;
+        print("保存成就: ${achievement.title}");
+      }
+      await achievementsBox.putAll(achievementsMap);
+      print("成就保存完成，当前数据库中成就数量: ${achievementsBox.length}");
+    } catch (e) {
+      print("保存成就时出错: $e");
+      rethrow;
     }
-    await achievementsBox.putAll(achievementsMap);
   }
 
   List<Achievement> getAllAchievements() {
-    return achievementsBox.values.toList();
+    try {
+      if (!achievementsBox.isOpen) {
+        print("achievementsBox 未打开，尝试重新打开");
+        achievementsBox = Hive.box<Achievement>(AppConstants.ACHIEVEMENTS_BOX);
+      }
+      final achievements = achievementsBox.values.toList();
+      print("从数据库获取成就数量: ${achievements.length}");
+      return achievements;
+    } catch (e) {
+      print("获取成就时出错: $e");
+      return [];
+    }
   }
-
   Achievement? getAchievement(String id) {
     return achievementsBox.get(id);
   }

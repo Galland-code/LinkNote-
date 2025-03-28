@@ -9,6 +9,7 @@ import '../../../data/repositories/user_repository.dart';
 import '../../../data/repositories/achievement_repository.dart';
 import '../../../data/repositories/task_repository.dart';
 import '../../../routes/app_routes.dart';
+import '../../auth/controllers/auth_controller.dart';
 
 class ProfileController extends GetxController {
   // 依赖注入
@@ -36,6 +37,9 @@ class ProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+        if (!Get.isRegistered<AuthController>()) {
+      Get.put(AuthController());
+    }
     loadUserProfileFromSharedPreferences();
     loadAchievements();
     loadDailyTasks();
@@ -96,7 +100,9 @@ class ProfileController extends GetxController {
   Future<void> loadAchievements() async {
     try {
       isLoading.value = true;
+      print("在controller加载成就");
       achievements.value = await _achievementRepository.getAchievements();
+      print(achievements.value);
       isLoading.value = false;
     } catch (e) {
       isLoading.value = false;
