@@ -45,7 +45,7 @@ class QuizController extends GetxController {
   final RxString selectedCategory = ''.obs;
   final RxInt selectedNoteId = (-1).obs;
   final RxString selectedDifficulty = '简单'.obs; //默认简单
-
+  final RxBool isAnswerCorrect = false.obs;
   // Challenge history
   final RxList<Map<String, dynamic>> challengeHistory =
       <Map<String, dynamic>>[].obs;
@@ -419,96 +419,45 @@ Future<void> generateQuestionsForNote(int noteId, int questionCount) async {
     }
   }
 
-  // Answer current question
-  // Future<void> answerQuestion(int index) async {
-  //   if (isAnswered.value) return;
-  //
-  //   isAnswered.value = true;
-  //   selectedAnswerIndex.value = index;
-  //
-  //   final currentQuestion = questions[currentQuestionIndex.value];
-  //   final isCorrect = await _quizService.recordAnswer(currentQuestion.id, index);
-  //
-  //   updateQuizStats();
-  //
-  //   if (challengeHistory.isNotEmpty) {
-  //     final challengeIndex = challengeHistory.indexWhere((c) => c['questions'] == questions.value || (c['questionCount'] == questions.length && c['title'].contains(currentQuestion.source)));
-  //
-  //     if (challengeIndex >= 0) {
-  //       final challenge = challengeHistory[challengeIndex];
-  //       challenge['completedCount'] = currentQuestionIndex.value + 1;
-  //       challengeHistory[challengeIndex] = challenge;
-  //     }
-  //   }
-  //
-  //   await Future.delayed(Duration(seconds: 1));
-  //   nextQuestion();
-  // }
-
-  // 回答问题，判断对错
-  Future<void> answerQuestion(String userAnswer) async {
-    if (isAnswered.value) return;
-
+Future<bool> answerQuestion(String userAnswer) async {
+    if (isAnswered.value) return false;
+    final firstLetter = userAnswer.isNotEmpty ? userAnswer[0].toUpperCase() : '';
+    if (firstLetter.isEmpty) return false;    
     final currentQuestion = questions[currentQuestionIndex.value];
     isAnswered.value = true;
     try {
-      // 准备提交答案的数据
       final submission = {
-        'questionId': currentQuestion.id,
-        'answer': userAnswer,
+        "questionId": currentQuestion.id,
+        "answer": firstLetter,
       };
-      // 发送答案到后端
+      print("提交答案: $submission");
+      
       final response = await post(
         Uri.parse('http://82.157.18.189:8080/linknote/api/questions/submit'),
-        body: submission,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(submission),
       );
 
       if (response.statusCode == 200) {
-        // 根据题型判断答案是否正确
-        bool isCorrect = false;
-        switch (currentQuestion.type) {
-          case '选择题':
-            // 选择题比较选项
-            isCorrect = userAnswer == currentQuestion.answer;
-            break;
-
-          case '填空题':
-            // 填空题进行精确匹配
-            isCorrect = userAnswer.trim() == currentQuestion.answer.trim();
-            break;
-
-          case '简答题':
-            // 简答题需要更复杂的评分逻辑
-            // 这里根据关键词匹配来判断
-            final keywords = currentQuestion.answer.split('、');
-            final matchCount =
-                keywords
-                    .where((keyword) => userAnswer.contains(keyword))
-                    .length;
-            isCorrect = matchCount / keywords.length >= 0.6; // 60%关键词匹配算正确
-            break;
-        }
+        final responseData = jsonDecode(response.body);
+        isAnswerCorrect.value = responseData['correct'] as bool;
 
         // 更新统计信息
-        if (isCorrect) {
+        if (isAnswerCorrect.value) {
           currentScore.value += getDifficultyScore(currentQuestion.difficulty);
         }
 
         // 更新进度
-        currentProgress.value =
-            (currentQuestionIndex.value + 1) / questions.length;
+        currentProgress.value = (currentQuestionIndex.value + 1) / questions.length;
 
-        // 显示答案反馈
-        qnaConversation.add({
-          'text': isCorrect ? '回答正确！' : '回答错误。正确答案是：${currentQuestion.answer}',
-          'isUser': false,
-        });
-
-        await Future.delayed(Duration(seconds: 2));
-        nextQuestion();
+        return isAnswerCorrect.value;
+      } else {
+        errorMessage.value = '提交答案失败: ${response.statusCode}';
+        return false;
       }
     } catch (e) {
       errorMessage.value = '提交答案失败: $e';
+      return false;
     }
   }
 
@@ -652,4 +601,84 @@ Future<void> generateQuestionsForNote(int noteId, int questionCount) async {
     selectedPdfId.value = pdfId;
     // 这里可以添加其他逻辑，比如更新相关的状态或数据
   }
-}
+// 填空题
+Future<bool> answerFillInQuestion(String value) async {
+    if (isAnswered.value) return false;
+    if (value.isEmpty) return false;
+    
+    final currentQuestion = questions[currentQuestionIndex.value];
+    isAnswered.value = true;
+    try {
+      final submission = {
+        "questionId": currentQuestion.id,
+        "answer": value,
+      };
+      print("提交填空题答案: $submission");
+      
+      final response = await post(
+        Uri.parse('http://82.157.18.189:8080/linknote/api/questions/submit'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(submission),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        isAnswerCorrect.value = responseData['correct'] as bool;
+        
+        // 更新统计信息
+        if (isAnswerCorrect.value) {
+          currentScore.value += getDifficultyScore(currentQuestion.difficulty);
+        }
+
+        // 更新进度
+        currentProgress.value = (currentQuestionIndex.value + 1) / questions.length;
+
+        // 清空输入框内容
+        answer.value = '';
+
+        return isAnswerCorrect.value;
+      } else {
+        errorMessage.value = '提交答案失败: ${response.statusCode}';
+        return false;
+      }
+    } catch (e) {
+      errorMessage.value = '提交答案失败: $e';
+      return false;
+    }
+  }
+  // 简答题
+Future<bool> answerShortQuestion(String value) async {
+    if (isAnswered.value) return false;
+    if (value.isEmpty) return false;
+    
+    final currentQuestion = questions[currentQuestionIndex.value];
+    isAnswered.value = true;
+    
+    try {
+      // 将用户答案和标准答案都转换为小写后进行比较
+      final userAnswer = value.trim().toLowerCase();
+      final correctAnswer = currentQuestion.answer.trim().toLowerCase();
+      print("用户答案: $userAnswer");
+      print("正确答案: $correctAnswer");
+      
+      // 判断是否包含关键词
+      final isCorrect = correctAnswer.split(' ').every((keyword) => 
+          userAnswer.contains(keyword.toLowerCase()));
+      
+      isAnswerCorrect.value = isCorrect;
+      
+      // 更新统计信息
+      if (isCorrect) {
+        currentScore.value += getDifficultyScore(currentQuestion.difficulty);
+      }
+
+      // 更新进度
+      currentProgress.value = (currentQuestionIndex.value + 1) / questions.length;
+
+      return isCorrect;
+    } catch (e) {
+      errorMessage.value = '判断答案时出错: $e';
+      return false;
+    }
+  }
+  }

@@ -168,7 +168,7 @@ class QuizLevelsView extends GetView<QuizController> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-          ),
+          ),            
         ),
         SizedBox(height: 16),
         GridView.builder(
