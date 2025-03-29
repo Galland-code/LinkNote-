@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:linknote/core/extensions/context_extensions.dart';
+import '../../../widgets/animated_toast.dart';
 import '../controllers/quiz_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../widgets/pixel_card.dart';
 import '../../../widgets/pixel_button.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+
 class QuizQuestionView extends GetView<QuizController> {
   @override
   Widget build(BuildContext context) {
@@ -173,63 +174,69 @@ class QuizQuestionView extends GetView<QuizController> {
   }
 
   // 渲染填空题
-  Widget _buildFillInBlank(question) 
-  {
+  Widget _buildFillInBlank(question) {
     return Padding(
-    padding: EdgeInsets.all(16),
-    child: Column(
-      children: [
-        TextField(
-          decoration: InputDecoration(
-            labelText: '请输入答案',
-            border: OutlineInputBorder(),
-          ),
-          onChanged: (value) {
-            controller.answer.value = value;
-          },
-        ),
-        SizedBox(height: 16),
-        if (controller.answer.value.isNotEmpty && !controller.isAnswered.value)
-          PixelButton(
-            text: '确认提交',
-            onPressed: () async {
-              final result = await controller.answerFillInQuestion(controller.answer.value);
-              _showResultDialog(result);
+      padding: EdgeInsets.all(16),
+      child: Column(
+        children: [
+          TextField(
+            decoration: InputDecoration(
+              labelText: '请输入答案',
+              border: OutlineInputBorder(),
+            ),
+            onChanged: (value) {
+              controller.answer.value = value;
             },
           ),
-      ],
-    ),
-  );
-}
+          SizedBox(height: 16),
+          if (controller.answer.value.isNotEmpty &&
+              !controller.isAnswered.value)
+            PixelButton(
+              text: '确认提交',
+              onPressed: () async {
+                final result = await controller.answerFillInQuestion(
+                  controller.answer.value,
+                );
+                _showResultDialog(result);
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
   // 渲染简答题
   Widget _buildShortAnswer(question) {
-  return Padding(
-    padding: EdgeInsets.all(16),
-    child: Column(
-      children: [
-        TextField(
-          decoration: InputDecoration(
-            labelText: '请输入简答题答案',
-            border: OutlineInputBorder(),
-          ),
-          maxLines: 5,
-          onChanged: (value) {
-            controller.answer.value = value;
-          },
-        ),
-        SizedBox(height: 16),
-        if (controller.answer.value.isNotEmpty && !controller.isAnswered.value)
-          PixelButton(
-            text: '确认提交',
-            onPressed: () async {
-              final result = await controller.answerShortQuestion(controller.answer.value);
-              _showResultDialog(result);
+    return Padding(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        children: [
+          TextField(
+            decoration: InputDecoration(
+              labelText: '请输入简答题答案',
+              border: OutlineInputBorder(),
+            ),
+            maxLines: 5,
+            onChanged: (value) {
+              controller.answer.value = value;
             },
           ),
-      ],
-    ),
-  );
-}
+          SizedBox(height: 16),
+          if (controller.answer.value.isNotEmpty &&
+              !controller.isAnswered.value)
+            PixelButton(
+              text: '确认提交',
+              onPressed: () async {
+                final result = await controller.answerShortQuestion(
+                  controller.answer.value,
+                );
+                _showResultDialog(result);
+              },
+            ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildTimer() {
     return Padding(
@@ -250,9 +257,10 @@ class QuizQuestionView extends GetView<QuizController> {
     final isAnswered = controller.isAnswered.value;
     print("选择选项：$option");
     // Remove correctOptionIndex check since we get correctness from backend
-    final isCorrect = isAnswered && isSelected && controller.isAnswerCorrect.value;
+    final isCorrect =
+        isAnswered && isSelected && controller.isAnswerCorrect.value;
     final isWrong = isAnswered && isSelected && !isCorrect;
-  
+
     Color backgroundColor = Colors.white;
     if (isSelected) {
       backgroundColor =
@@ -262,7 +270,7 @@ class QuizQuestionView extends GetView<QuizController> {
               ? Colors.red.shade200
               : Colors.blue.shade200;
     }
-  
+
     return GestureDetector(
       onTap: () async {
         if (!controller.isAnswered.value) {
@@ -301,7 +309,8 @@ class QuizQuestionView extends GetView<QuizController> {
                   option,
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
               ),
@@ -312,11 +321,12 @@ class QuizQuestionView extends GetView<QuizController> {
                       : isWrong
                       ? Icons.cancel
                       : Icons.circle_outlined,
-                  color: isCorrect
-                      ? Colors.green
-                      : isWrong
-                      ? Colors.red
-                      : Colors.grey,
+                  color:
+                      isCorrect
+                          ? Colors.green
+                          : isWrong
+                          ? Colors.red
+                          : Colors.grey,
                 ),
             ],
           ),
@@ -351,19 +361,14 @@ class QuizQuestionView extends GetView<QuizController> {
       ),
     );
   }
-void _showResultDialog(bool isCorrect) {
-  Fluttertoast.showToast(
-    msg: isCorrect ? '回答正确！' : '回答错误',
-    toastLength: Toast.LENGTH_SHORT,
-    gravity: ToastGravity.CENTER,
-    timeInSecForIosWeb: 1,
-    backgroundColor: isCorrect ? Colors.green : Colors.red,
-    textColor: Colors.white,
-    fontSize: 20.0,
-    webShowClose: true,
-    webBgColor: isCorrect ? "linear-gradient(to right, #00b09b, #96c93d)" : "linear-gradient(to right, #ff416c, #ff4b2b)",
-    webPosition: "center",
-  );
-}
 
+  void _showResultDialog(bool isCorrect) {
+    // 简单用法
+    if (!isCorrect ) {
+      ResultDialog.show(isCorrect: true);
+    }else{
+    ResultDialog.show(
+        isCorrect: false
+    );}
+  }
 }
