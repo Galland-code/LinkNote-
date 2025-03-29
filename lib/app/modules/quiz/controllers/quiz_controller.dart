@@ -1,17 +1,23 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart';
 import 'package:pdf/pdf.dart';
+import 'package:lottie/lottie.dart';
 import '../../../data/models/chaQuestion.dart';
 import '../../../data/models/question.dart';
 import '../../../data/models/note.dart';
+import '../../../data/models/wrong_analysis.dart';
+import '../../../data/models/revenge_challenge.dart';
 import '../../../data/repositories/question_repository.dart';
 import '../../../data/repositories/note_repository.dart';
 import '../../../data/services/quiz_service.dart';
 import '../../../routes/app_routes.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../auth/controllers/userController.dart';
 import '../../link_note/controllers/link_note_controller.dart';
+import '../../question_bank/controllers/question_bank_controller.dart';
 
 // 增加对话框类
 class ChatMessage {
@@ -69,6 +75,16 @@ class QuizController extends GetxController {
   // 获取 PDF 文档
   List<dynamic> pdfDocuments = <dynamic>[];
 
+  // 错题熔断机制相关属性
+  final RxList<chaQuestion> wrongQuestions = <chaQuestion>[].obs; // 错题列表
+  final RxInt consecutiveWrongCount = 0.obs; // 连续答错次数
+  final RxBool circuitBreakerTriggered = false.obs; // 是否触发熔断
+  final RxString currentWeakCategory = ''.obs; // 当前薄弱类别
+  final RxList<RevengeChallenge> revengeChallenges =
+      <RevengeChallenge>[].obs; // 复仇关卡列表
+  final RxBool showingAIExplanation = false.obs; // 是否正在显示AI解释
+  final RxString aiExplanation = ''.obs; // AI解释内容
+
   @override
   void onInit() {
     super.onInit();
@@ -86,7 +102,6 @@ class QuizController extends GetxController {
       startQnaSession();
     });
   }
-
 
   Future<void> initializePdfData() async {
     try {
@@ -289,10 +304,13 @@ class QuizController extends GetxController {
         challengeQuestions =
             questions.where((q) => q.sourceId == note.id).toList();
         print("找到的笔记相关问题数: ${challengeQuestions.length}");
- 
+
         if (challengeQuestions.isEmpty) {
-    Get.toNamed(Routes.CHALLENGE_GENERAGE, arguments: {'documentId': note.id});
-      }
+          Get.toNamed(
+            Routes.CHALLENGE_GENERAGE,
+            arguments: {'documentId': note.id},
+          );
+        }
       } else if (selectedCategory.value.isNotEmpty) {
         print("分类挑战模式 - 选中的分类: ${selectedCategory.value}");
         challengeTitle = '${selectedCategory.value} - 分类挑战';
@@ -359,36 +377,32 @@ class QuizController extends GetxController {
       isLoading.value = false;
     }
   }
-// 调用生成题目的 API
-Future<void> generateQuestionsForNote(int noteId, int questionCount) async {
-  try {
 
-    print("开始生成题目");
-    print("documentId:$noteId");
-    print("questionCount:$questionCount");
-    final response = await post(
-      Uri.parse('http://82.157.18.189:8080/linknote/api/questions/generate'),
-      body: jsonEncode({
-        'documentId': noteId,
-        'count': questionCount,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    );
+  // 调用生成题目的 API
+  Future<void> generateQuestionsForNote(int noteId, int questionCount) async {
+    try {
+      print("开始生成题目");
+      print("documentId:$noteId");
+      print("questionCount:$questionCount");
+      final response = await post(
+        Uri.parse('http://82.157.18.189:8080/linknote/api/questions/generate'),
+        body: jsonEncode({'documentId': noteId, 'count': questionCount}),
+        headers: {'Content-Type': 'application/json'},
+      );
 
-    if (response.statusCode == 200) {
-      print('题目生成成功！');
-      // 可以根据需要处理返回的数据，例如更新问题列表
-      loadQuestions(); // 重新加载问题
-    } else {
-      print('生成题目失败: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        print('题目生成成功！');
+        // 可以根据需要处理返回的数据，例如更新问题列表
+        loadQuestions(); // 重新加载问题
+      } else {
+        print('生成题目失败: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('生成题目时出错: $e');
     }
-  } catch (e) {
-    print('生成题目时出错: $e');
   }
-}
-// 添加生成问题的对话框方法
+
+  // 添加生成问题的对话框方法
   void onQuestionsChanged() {
     ever(questions, (List<chaQuestion> questionsList) {
       print("问题列表已更新，当前数量: ${questionsList.length}");
@@ -419,10 +433,12 @@ Future<void> generateQuestionsForNote(int noteId, int questionCount) async {
     }
   }
 
-Future<bool> answerQuestion(String userAnswer) async {
+  @override
+  Future<bool> answerQuestion(String userAnswer) async {
     if (isAnswered.value) return false;
-    final firstLetter = userAnswer.isNotEmpty ? userAnswer[0].toUpperCase() : '';
-    if (firstLetter.isEmpty) return false;    
+    final firstLetter =
+        userAnswer.isNotEmpty ? userAnswer[0].toUpperCase() : '';
+    if (firstLetter.isEmpty) return false;
     final currentQuestion = questions[currentQuestionIndex.value];
     isAnswered.value = true;
     try {
@@ -431,7 +447,7 @@ Future<bool> answerQuestion(String userAnswer) async {
         "answer": firstLetter,
       };
       print("提交答案: $submission");
-      
+
       final response = await post(
         Uri.parse('http://82.157.18.189:8080/linknote/api/questions/submit'),
         headers: {'Content-Type': 'application/json'},
@@ -442,13 +458,24 @@ Future<bool> answerQuestion(String userAnswer) async {
         final responseData = jsonDecode(response.body);
         isAnswerCorrect.value = responseData['correct'] as bool;
 
-        // 更新统计信息
+        // 处理答题结果
         if (isAnswerCorrect.value) {
+          // 答对了，重置连续错误计数
+          consecutiveWrongCount.value = 0;
           currentScore.value += getDifficultyScore(currentQuestion.difficulty);
+        } else {
+          // 答错了，添加到错题集并增加连续错误计数
+          addWrongQuestion(currentQuestion);
+          consecutiveWrongCount.value++;
+          // 检查是否需要触发熔断
+          if (consecutiveWrongCount.value >= 3) {
+            _triggerCircuitBreaker(currentQuestion);
+          }
         }
 
         // 更新进度
-        currentProgress.value = (currentQuestionIndex.value + 1) / questions.length;
+        currentProgress.value =
+            (currentQuestionIndex.value + 1) / questions.length;
 
         return isAnswerCorrect.value;
       } else {
@@ -601,20 +628,18 @@ Future<bool> answerQuestion(String userAnswer) async {
     selectedPdfId.value = pdfId;
     // 这里可以添加其他逻辑，比如更新相关的状态或数据
   }
-// 填空题
-Future<bool> answerFillInQuestion(String value) async {
+
+  // 填空题
+  Future<bool> answerFillInQuestion(String value) async {
     if (isAnswered.value) return false;
     if (value.isEmpty) return false;
-    
+
     final currentQuestion = questions[currentQuestionIndex.value];
     isAnswered.value = true;
     try {
-      final submission = {
-        "questionId": currentQuestion.id,
-        "answer": value,
-      };
+      final submission = {"questionId": currentQuestion.id, "answer": value};
       print("提交填空题答案: $submission");
-      
+
       final response = await post(
         Uri.parse('http://82.157.18.189:8080/linknote/api/questions/submit'),
         headers: {'Content-Type': 'application/json'},
@@ -624,14 +649,25 @@ Future<bool> answerFillInQuestion(String value) async {
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
         isAnswerCorrect.value = responseData['correct'] as bool;
-        
+
         // 更新统计信息
         if (isAnswerCorrect.value) {
+          consecutiveWrongCount.value = 0;
           currentScore.value += getDifficultyScore(currentQuestion.difficulty);
+        } else {
+          // 答错了，添加到错题集并增加连续错误计数
+          addWrongQuestion(currentQuestion);
+          consecutiveWrongCount.value++;
+
+          // 检查是否需要触发熔断
+          if (consecutiveWrongCount.value >= 3) {
+            _triggerCircuitBreaker(currentQuestion);
+          }
         }
 
         // 更新进度
-        currentProgress.value = (currentQuestionIndex.value + 1) / questions.length;
+        currentProgress.value =
+            (currentQuestionIndex.value + 1) / questions.length;
 
         // 清空输入框内容
         answer.value = '';
@@ -646,34 +682,47 @@ Future<bool> answerFillInQuestion(String value) async {
       return false;
     }
   }
+
   // 简答题
-Future<bool> answerShortQuestion(String value) async {
+  Future<bool> answerShortQuestion(String value) async {
     if (isAnswered.value) return false;
     if (value.isEmpty) return false;
-    
+
     final currentQuestion = questions[currentQuestionIndex.value];
     isAnswered.value = true;
-    
+
     try {
       // 将用户答案和标准答案都转换为小写后进行比较
       final userAnswer = value.trim().toLowerCase();
       final correctAnswer = currentQuestion.answer.trim().toLowerCase();
       print("用户答案: $userAnswer");
       print("正确答案: $correctAnswer");
-      
+
       // 判断是否包含关键词
-      final isCorrect = correctAnswer.split(' ').every((keyword) => 
-          userAnswer.contains(keyword.toLowerCase()));
-      
+      final isCorrect = correctAnswer
+          .split(' ')
+          .every((keyword) => userAnswer.contains(keyword.toLowerCase()));
+
       isAnswerCorrect.value = isCorrect;
-      
+
       // 更新统计信息
       if (isCorrect) {
+        consecutiveWrongCount.value = 0;
         currentScore.value += getDifficultyScore(currentQuestion.difficulty);
+      } else {
+        // 答错了，添加到错题集并增加连续错误计数
+        addWrongQuestion(currentQuestion);
+        consecutiveWrongCount.value++;
+
+        // 检查是否需要触发熔断
+        if (consecutiveWrongCount.value >= 3) {
+          _triggerCircuitBreaker(currentQuestion);
+        }
       }
 
       // 更新进度
-      currentProgress.value = (currentQuestionIndex.value + 1) / questions.length;
+      currentProgress.value =
+          (currentQuestionIndex.value + 1) / questions.length;
 
       return isCorrect;
     } catch (e) {
@@ -681,4 +730,260 @@ Future<bool> answerShortQuestion(String value) async {
       return false;
     }
   }
+
+  // 添加错题到错题列表
+  void addWrongQuestion(chaQuestion question) {
+    if (!wrongQuestions.any((q) => q.id == question.id)) {
+      wrongQuestions.add(question);
+    }
   }
+
+  // 触发错题熔断
+  void _triggerCircuitBreaker(chaQuestion question) {
+    circuitBreakerTriggered.value = true;
+    currentWeakCategory.value = question.category;
+
+    // 获取知识点的AI解释
+    _getAIExplanation(question);
+
+    // 创建复仇关卡
+    _createRevengeChallenge(question.category);
+
+    // 显示Lottie动画对话框
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 300,
+              height: 300,
+              child: Lottie.asset(
+                'assets/lottie/warning.json',
+                fit: BoxFit.contain,
+                repeat: true,
+                animate: true,
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    '知识点薄弱',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: const Color.fromARGB(255, 172, 4, 4),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    '检测到您在${question.category}类题目中存在困难，已为您准备知识点解析',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => Get.back(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 174, 9, 9),
+                    ),
+                    child: Text('我知道了', style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: true,
+    );
+
+    // 在对话框显示后，5秒后自动关闭
+    Future.delayed(Duration(seconds: 5), () {
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+    });
+  }
+
+  // 获取AI解释
+  Future<void> _getAIExplanation(chaQuestion question) async {
+    try {
+      showingAIExplanation.value = true;
+
+      final response = await post(
+        Uri.parse('http://82.157.18.189:8080/linknote/api/questions/explain'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'questionId': question.id,
+          'category': question.category,
+          'content': question.content,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        aiExplanation.value = data['explanation'] ?? '暂无解释';
+
+        // 显示AI解释对话框
+        _showAIExplanationDialog();
+      } else {
+        aiExplanation.value = '获取解释失败，请稍后再试';
+      }
+    } catch (e) {
+      aiExplanation.value = '网络错误，无法获取解释';
+    } finally {
+      showingAIExplanation.value = false;
+    }
+  }
+
+  // 显示AI解释对话框
+  void _showAIExplanationDialog() {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '学伴AI解析',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+              SizedBox(height: 16),
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                constraints: BoxConstraints(maxHeight: 300),
+                child: SingleChildScrollView(
+                  child: Text(
+                    aiExplanation.value,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  TextButton(onPressed: () => Get.back(), child: Text('关闭')),
+                  ElevatedButton(
+                    onPressed: () {
+                      Get.back();
+                      _navigateToRevengeChallenge();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryColor,
+                    ),
+                    child: Text(
+                      '挑战复仇关卡',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  // 创建复仇关卡
+  Future<void> _createRevengeChallenge(String category) async {
+    try {
+      // 从错题集中筛选同类别的题目
+      List<chaQuestion> categoryWrongQuestions =
+          wrongQuestions
+              .where((q) => q.category.toLowerCase() == category.toLowerCase())
+              .toList();
+
+      // 确保至少有3道题目
+      if (categoryWrongQuestions.length < 3) {
+        // 如果不够，从所有题目中补充
+        final additionalQuestions =
+            questions
+                .where(
+                  (q) => q.category.toLowerCase() == category.toLowerCase(),
+                )
+                .where(
+                  (q) => !categoryWrongQuestions.any((wq) => wq.id == q.id),
+                )
+                .take(3 - categoryWrongQuestions.length)
+                .toList();
+
+        categoryWrongQuestions.addAll(additionalQuestions);
+      }
+
+      // 打乱顺序
+      categoryWrongQuestions.shuffle();
+
+      // 创建复仇关卡
+      final revengeChallenge = RevengeChallenge(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        title: '${category}复仇关卡',
+        category: category,
+        createdAt: DateTime.now(),
+        questions: categoryWrongQuestions,
+        difficultyLevel: 2,
+        weaknessDescription: '针对${category}知识点的薄弱环节定制训练',
+      );
+
+      // 添加到复仇关卡列表
+      revengeChallenges.add(revengeChallenge);
+    } catch (e) {
+      print('创建复仇关卡出错: $e');
+    }
+  }
+
+  // 导航到复仇关卡
+  void _navigateToRevengeChallenge() {
+    if (revengeChallenges.isEmpty) return;
+
+    final latestChallenge = revengeChallenges.last;
+
+    // 构建挑战对象
+    final challenge = {
+      'id': latestChallenge.id,
+      'title': latestChallenge.title,
+      'source': latestChallenge.category,
+      'questionCount': latestChallenge.questions.length,
+      'completedCount': 0,
+      'date': DateTime.now(),
+      'questions': latestChallenge.questions,
+      'levels': latestChallenge.questions,
+    };
+
+    // 导航到关卡页面
+    Get.toNamed(Routes.QUIZ_LEVELS, arguments: {'challenge': challenge});
+  }
+
+  // 获取复仇关卡列表
+  List<RevengeChallenge> getRevengeChallenges() {
+    return revengeChallenges;
+  }
+
+  // 重置熔断状态
+  void resetCircuitBreaker() {
+    circuitBreakerTriggered.value = false;
+    consecutiveWrongCount.value = 0;
+    currentWeakCategory.value = '';
+  }
+}
