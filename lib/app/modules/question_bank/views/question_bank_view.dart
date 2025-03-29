@@ -8,6 +8,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../routes/app_routes.dart';
 import '../../../widgets/bottom_nav_bar.dart';
 import '../../../widgets/pixel_card.dart';
+import '../../../data/models/revenge_challenge.dart';
 
 class QuestionBankView extends GetView<QuestionBankController> {
   @override
@@ -23,7 +24,11 @@ class QuestionBankView extends GetView<QuestionBankController> {
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [_buildQuestionsList(), _buildAnalysisSection()],
+                    children: [
+                      _buildQuestionsList(),
+                      _buildAnalysisSection(),
+                      _buildRevengeSection(),
+                    ],
                   ),
                 ),
               ),
@@ -246,13 +251,215 @@ class QuestionBankView extends GetView<QuestionBankController> {
         ],
       ),
     );
-  }  
-  
+  }
+
+  Widget _buildRevengeSection() {
+    return Obx(() {
+      if (!controller.showRevengeSection.value) {
+        return SizedBox.shrink();
+      }
+
+      return Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.shield, color: Colors.deepOrange),
+                SizedBox(width: 8),
+                Text('复仇关卡', style: AppTheme.titleStyle.copyWith(fontSize: 20)),
+                Spacer(),
+                IconButton(
+                  icon: Icon(Icons.refresh),
+                  onPressed: () => controller.loadRevengeChallenges(),
+                  tooltip: '刷新',
+                ),
+              ],
+            ),
+            SizedBox(height: 8),
+            Text(
+              '针对你的薄弱知识点定制的特训关卡，挑战并征服它们！',
+              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+            ),
+            SizedBox(height: 16),
+            if (controller.isLoadingRevengeChallenges.value)
+              Center(child: CircularProgressIndicator())
+            else if (controller.revengeChallenges.isEmpty)
+              _buildEmptyRevengeView()
+            else
+              _buildRevengeChallengesList(),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildEmptyRevengeView() {
+    return PixelCard(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Icon(Icons.emoji_events, size: 48, color: Colors.grey),
+          SizedBox(height: 16),
+          Text(
+            '暂无复仇关卡',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            '完成更多题目后，系统将根据你的弱点生成定制关卡',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey[700]),
+          ),
+          SizedBox(height: 16),
+          PixelButton(
+            text: '生成新关卡',
+            onPressed: () => controller.generateNewRevengeChallenge(),
+            width: 200,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRevengeChallengesList() {
+    return Container(
+      height: 220,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount:
+            controller.revengeChallenges.length + 1, // +1 for "create new" card
+        itemBuilder: (context, index) {
+          if (index == controller.revengeChallenges.length) {
+            // "Create new" card
+            return _buildCreateNewChallengeCard();
+          }
+
+          final challenge = controller.revengeChallenges[index];
+          return _buildChallengeCard(challenge);
+        },
+      ),
+    );
+  }
+
+  Widget _buildChallengeCard(RevengeChallenge challenge) {
+    final completionPercentage =
+        challenge.questions.isEmpty
+            ? 0.0
+            : challenge.completedCount / challenge.questions.length;
+
+    return Container(
+      width: 180,
+      margin: EdgeInsets.only(right: 16),
+      child: PixelCard(
+        backgroundColor: AppTheme.secondaryColor.withOpacity(0.2),
+        padding: EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              challenge.title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.primaryColor,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            SizedBox(height: 8),
+            Text(
+              '${challenge.questions.length}道题目',
+              style: TextStyle(fontSize: 14),
+            ),
+            Text(
+              '难度: ${_getDifficultyText(challenge.difficultyLevel)}',
+              style: TextStyle(fontSize: 14),
+            ),
+            SizedBox(height: 8),
+            LinearProgressIndicator(
+              value: completionPercentage,
+              backgroundColor: Colors.grey.shade300,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                challenge.isCompleted ? Colors.green : AppTheme.primaryColor,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              '完成度: ${(completionPercentage * 100).toInt()}%',
+              style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+            ),
+            Spacer(),
+            PixelButton(
+              text: challenge.isCompleted ? '重新挑战' : '开始挑战',
+              onPressed: () => controller.startRevengeChallenge(challenge),
+              height: 36,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCreateNewChallengeCard() {
+    return Container(
+      width: 180,
+      margin: EdgeInsets.only(right: 16),
+      child: PixelCard(
+        backgroundColor: Colors.grey.shade200,
+        padding: EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.add_circle_outline,
+              size: 48,
+              color: AppTheme.primaryColor,
+            ),
+            SizedBox(height: 16),
+            Text(
+              '生成新关卡',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.primaryColor,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              '基于你的错题生成新的挑战',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+            ),
+            Spacer(),
+            PixelButton(
+              text: '创建',
+              onPressed: () => controller.generateNewRevengeChallenge(),
+              height: 36,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getDifficultyText(int level) {
+    switch (level) {
+      case 1:
+        return '简单';
+      case 2:
+        return '中等';
+      case 3:
+        return '困难';
+      default:
+        return '未知';
+    }
+  }
 
   void _showAnalysisReport() async {
-
     await controller.fetchWrongAnalysis();
-    
+
     if (controller.wrongAnalysis.value != null) {
       Get.dialog(
         Dialog(
@@ -265,13 +472,10 @@ class QuestionBankView extends GetView<QuestionBankController> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-   Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '错题分析报告',
-                      style: AppTheme.subtitleStyle,
-                    ),
+                    Text('错题分析报告', style: AppTheme.subtitleStyle),
                     IconButton(
                       icon: Icon(Icons.close),
                       onPressed: () => Get.back(),
@@ -282,10 +486,7 @@ class QuestionBankView extends GetView<QuestionBankController> {
                 SizedBox(height: 12),
                 Text(
                   controller.wrongAnalysis.value!.analysis,
-                  style: TextStyle(
-                    fontSize: 14,
-                    height: 1.5,
-                  ),
+                  style: TextStyle(fontSize: 14, height: 1.5),
                 ),
                 SizedBox(height: 20),
                 Center(
@@ -302,6 +503,7 @@ class QuestionBankView extends GetView<QuestionBankController> {
       );
     }
   }
+
   Widget _buildBottomNavBar() {
     return Obx(
       () => BottomNavBar(
