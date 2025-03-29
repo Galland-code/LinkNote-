@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:get/get.dart';
 import '../models/note.dart';
 import '../providers/api_provider.dart';
@@ -220,9 +222,20 @@ class NoteRepository {
     }
   }
 
-  // 添加 saveNote 方法
+  //  保存或创建note
   Future<void> saveNote(Note note) async {
-    // 实现保存笔记的逻辑
-    // 例如，将笔记保存到数据库
+    try {
+      final response = await _apiProvider.post(
+        '${AppConstants.BASE_URL}/files/note',
+        data: {
+          'title': note.title,
+          'content': note.content,
+          'userId': note.userId
+        },
+      );
+    }catch(e){
+      print(e);
+    }
+
   }
 }
