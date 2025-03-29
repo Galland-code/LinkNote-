@@ -32,7 +32,7 @@ class WrongAnalysis {
   // 检查是否需要熔断
   bool needsCircuitBreaker() {
     return consecutiveWrongCount >= 3 || // 连续答错3次以上
-        wrongCount >= 5; // 错题总数达到5个
+        wrongCount >= 20; // 错题总数达到20个
   }
 
   // 获取优先复习的类别
